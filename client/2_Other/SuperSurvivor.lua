@@ -1185,7 +1185,6 @@ function SuperSurvivor:Speak(text)
 
 	if(SpeakEnabled) then
 	
-		--print(self:getName()..": "..text)
 		self.SayLine1 = text
 		self.JustSpoke = true
 		self.TicksSinceSpoke = 0
@@ -1197,12 +1196,13 @@ end
 function SuperSurvivor:RoleplaySpeak(text)
 
 	if(SuperSurvivorGetOptionValue("RoleplayMessage") == 1) then
+		
 		if(text:match('^\*(.*)\*$')) then -- checks if the string already have '*' (some localizations have it)
 			self.SayLine1 = text
 		else
-			--print(self:getName()..": "..text)
 			self.SayLine1 = "*".. text .. "*"
 		end
+
 		self.JustSpoke = true
 		self.TicksSinceSpoke = 0
 	end
