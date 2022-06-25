@@ -1177,8 +1177,11 @@ function SuperSurvivor:DebugSay(text)
 end
 
 function SuperSurvivor:isSpeaking()
-	if(self.JustSpoke) or (self.player:isSpeaking()) then return true
-	else return false end
+	if(self.JustSpoke) or (self.player:isSpeaking()) then 
+		return true
+	else 
+		return false 
+	end
 end
 
 function SuperSurvivor:Speak(text)
@@ -1205,6 +1208,7 @@ function SuperSurvivor:RoleplaySpeak(text)
 
 		self.JustSpoke = true
 		self.TicksSinceSpoke = 0
+	
 	end
 end
 
