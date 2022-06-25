@@ -11,5 +11,4 @@
 GFollowDistance = 5
 DebugSayEnabled = DebugOptions
 SpeakEnabled = true
-RoleplaySpeakEnabled = true
 PVPDefault = Option_ForcePVP
