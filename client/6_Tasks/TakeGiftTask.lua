@@ -67,7 +67,7 @@ function TakeGiftTask:update()
 		local distance = getDistanceBetween(self.parent:Get(), sq)
 			
 		if(not self.DestContainer:contains(self.TheGift)) and (distance < 2.0) then
-			self.parent:Speak("*" .. getText("ContextMenu_SD_Takes_Before") .. self.TheGift:getDisplayName() .. getText("ContextMenu_SD_Takes_After") .. "*")
+			self.parent:RoleplaySpeak(getText("ContextMenu_SD_Takes_Before") .. self.TheGift:getDisplayName() .. getText("ContextMenu_SD_Takes_After"))
 			
 			if(self.SrcContainer == "Ground") then
 				self.DestContainer:AddItem(self.TheGift)

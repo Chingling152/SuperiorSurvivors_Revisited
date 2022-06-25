@@ -1193,6 +1193,19 @@ function SuperSurvivor:Speak(text)
 	end
 end
 
+
+function SuperSurvivor:RoleplaySpeak(text)
+
+	if(RoleplaySpeakEnabled) then
+	
+		--print(self:getName()..": "..text)
+		self.SayLine1 = "*".. text .. "*"
+		self.JustSpoke = true
+		self.TicksSinceSpoke = 0
+		
+	end
+end
+
 function SuperSurvivor:MarkAttemptedBuildingExplored(building)
 	if(building == nil) then return false end
 	local bdef = building:getDef()	
@@ -2884,7 +2897,7 @@ function SuperSurvivor:ManageXP()
 					display_perk = getText("IGUI_perks_Blunt") .. " " .. display_perk
 				end
 				
-				self:Speak(getText("ContextMenu_SD_PerkLeveledUp_Before")..tostring(display_perk)..getText("ContextMenu_SD_PerkLeveledUp_After"))
+				self:RoleplaySpeak(getText("ContextMenu_SD_PerkLeveledUp_Before")..tostring(display_perk)..getText("ContextMenu_SD_PerkLeveledUp_After"))
 			end
 			--if(SurvivorPerks[i] == "Aiming") then self.player:Say(tostring(currentXP).."/"..tostring(XPforNextLevel)) end
 		end
@@ -3442,7 +3455,7 @@ function SuperSurvivor:openBoxForGun()
 			--print("in loop!")
 			inv:AddItem(modl..ammotype)
 		end
-		self:Speak("**".. getText("ContextMenu_SD_Opens_Before") .. ammoBox:getDisplayName() .. getText("ContextMenu_SD_Opens_After") ..  "*")
+		self:RoleplaySpeak(getText("ContextMenu_SD_Opens_Before") .. ammoBox:getDisplayName() .. getText("ContextMenu_SD_Opens_After"))
 		ammoBox:getContainer():Remove(ammoBox)
 		return self.player:getInventory():FindAndReturn(ammotype);
 	else

@@ -116,7 +116,7 @@ function GatherWoodTask:update()
 					if(self.Target:getWorldItem()) then self.Target:getWorldItem():getSquare():removeWorldObject(self.Target:getWorldItem()) end
 					if(self.Target:getWorldItem()) then self.Target:getWorldItem():removeFromSquare() end
 					self.Target:setWorldItem(nil)
-					self.parent:Speak("**" .. getText("ContextMenu_SD_TakesItemFromGround_Before") .. self.Target:getDisplayName() .. getText("ContextMenu_SD_TakesItemFromGround_After") .."**")
+					self.parent:RoleplaySpeak(getText("ContextMenu_SD_TakesItemFromGround_Before") .. self.Target:getDisplayName() .. getText("ContextMenu_SD_TakesItemFromGround_After"))
 					self.CarryingToPoint = true
 				else
 					self.Target = nil
