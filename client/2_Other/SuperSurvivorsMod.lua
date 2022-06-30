@@ -363,7 +363,9 @@ function SuperSurvivorsLoadGridsquare(square)
 			IsDamageBroken = (gameVersion:getMajor() >= 41 and gameVersion:getMinor() > 50 and gameVersion:getMinor() < 53)
 			IsNpcDamageBroken = (gameVersion:getMajor() >= 41 and gameVersion:getMinor() >= 53)
 			
-			 
+			
+			Option_Perception_Bonus = SuperSurvivorGetOptionValue("Option_Perception_Bonus")
+			
 			Option_ForcePVP = SuperSurvivorGetOptionValue("Option_ForcePVP")
 			Option_FollowDistance = SuperSurvivorGetOptionValue("Option_FollowDistance")
 			SuperSurvivorBravery = SuperSurvivorGetOptionValue("Bravery")
@@ -464,6 +466,7 @@ function SuperSurvivorsLoadGridsquare(square)
 							RaiderGroup:addMember(raider,"Guard") 
 							raider:setHostile(groupHostility)
 							raider:getTaskManager():AddToTop(FollowTask:new(raider,Leader:Get()))
+						--	--mySS:DebugSay("Follow task in survivorsmod lua - Path b")
 						end						
 						
 						if(raider:hasWeapon() == false) then raider:giveWeapon(MeleWeapons[ZombRand(1,#MeleWeapons)]) end
@@ -820,11 +823,12 @@ function supersurvivortemp(keyNum)
 						mySS:Get():Say(getText("ContextMenu_SD_ComeWithMe_Before") .. member:Get():getForname() .. getText("ContextMenu_SD_ComeWithMe_After"))
 						member:getTaskManager():clear()
 						member:getTaskManager():AddToTop(FollowTask:new(member,mySS:Get()))
+						--mySS:DebugSay("Follow Task triggered in supersurvivorsmod - path a")
 					else
 						--print("getClosestMember returned nil")
 					end
 				else
-					mySS:DebugSay("no group")
+					--mySS:DebugSay("no group")
 					--print("cant call close member bc no group for player detected")
 				end
 			end
@@ -844,7 +848,7 @@ function supersurvivortemp(keyNum)
 						--print("getClosestMember returned nil")
 					end
 				else
-					mySS:DebugSay("no group")
+					--mySS:DebugSay("no group")
 					--print("cant call close member bc no group for player detected")
 				end
 			end
@@ -1200,7 +1204,7 @@ function SuperSurvivorDoRandomSpawns()
 				print("AltSpawnPercent			=	"..tostring(AltSpawnPercent))
 				print("i _________________ 	=	"..tostring(i))
 				print("")
-				print("This may not give true answers, it's testing ZombRand and how it works. To see if EVERY time it's called does it create a new one, EVEN in a For i = 1 do scenario. So don't fall for if it 'fails' or 'passes'. It's testing RANDOM. NOT to see if the values are themselves correct.")
+				print("This may not give true answers, it's testing ZombRand and how it works. To see if EVERY time it's called does it create a new one, EVEN in a For i = 1 do scenario. So don't fall for if it 'fails' or 'passes'. It's testing RANDOM.")
 				print("")
 				if (AltSpawnPercent > ZombRand(100)) and (AlternativeSpawning >= 2) then  print("Testing a ZombRand AltSpawnPercent and (AlternativeSpawning >= 2) Pass: "..tostring(ZombRand(100))) else print("Testing a ZombRand AltSpawnPercent - 1 and (AlternativeSpawning >= 2) Fail: "..tostring(ZombRand(100)))   end
 				if (AltSpawnPercent > ZombRand(100)) and (AlternativeSpawning >= 3) then  print("Testing a ZombRand AltSpawnPercent and (AlternativeSpawning >= 3) Pass: "..tostring(ZombRand(100))) else print("Testing a ZombRand AltSpawnPercent - 1 and (AlternativeSpawning >= 3) Fail: "..tostring(ZombRand(100)))   end

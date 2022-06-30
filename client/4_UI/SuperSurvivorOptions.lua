@@ -62,6 +62,7 @@ function SuperSurvivorGetOptionValue(option)
 	elseif(option == "RaidersChance") then return ((num + 2) * 24 * 14)  -- (6 * 24 * 14)
 	
 	elseif(option == "Option_FollowDistance") then return (num+2)
+	elseif(option == "Option_Perception_Bonus") then return (num)
 	
 	elseif(option == "Option_ForcePVP") and (num == 1) then return 0
 	elseif(option == "Option_ForcePVP") and (num == 2) then return 1
@@ -166,13 +167,14 @@ end
 	if(not SuperSurvivorOptions["SurvivorHunger"]) then SuperSurvivorOptions["SurvivorHunger"] = 2 end
 	if(not SuperSurvivorOptions["SurvivorFriendliness"]) then SuperSurvivorOptions["SurvivorFriendliness"] = 4 end
 	
+	if(not SuperSurvivorOptions["Option_Perception_Bonus"]) then SuperSurvivorOptions["Option_Perception_Bonus"] = 2 end
+	
 	if(not SuperSurvivorOptions["RaidersAtLeastHours"]) then SuperSurvivorOptions["RaidersAtLeastHours"] = 13 end
 	if(not SuperSurvivorOptions["RaidersAfterHours"]) then SuperSurvivorOptions["RaidersAfterHours"] = 7 end
 	if(SuperSurvivorOptions["RaidersAfterHours"] > 22) then SuperSurvivorOptions["RaidersAfterHours"] = 22 end -- fix legacy bad value
 	if(not SuperSurvivorOptions["RaidersChance"]) then SuperSurvivorOptions["RaidersChance"] = 3 end
 	if(not SuperSurvivorOptions["Option_FollowDistance"]) then SuperSurvivorOptions["Option_FollowDistance"] = 5 end
 	if(not SuperSurvivorOptions["Option_ForcePVP"]) then SuperSurvivorOptions["Option_ForcePVP"] = 0 end
-	if(not SuperSurvivorOptions["RoleplayMessage"]) then SuperSurvivorOptions["RoleplayMessage"] = 0 end
 	if(not SuperSurvivorOptions["Bravery"]) then SuperSurvivorOptions["Bravery"] = 2 end
 	if(not SuperSurvivorOptions["AltSpawn"]) then SuperSurvivorOptions["AltSpawn"] = 2 end
 	if(not SuperSurvivorOptions["AltSpawnPercent"]) then SuperSurvivorOptions["AltSpawnPercent"] = 10 end
@@ -461,17 +463,6 @@ if index then
 		
 	y = y + spacing4x
 
-	local options = NPC_Options_OffOn()
-
-		self:addCustomCombo('RoleplayMessage',splitpoint,y,comboWidth,getText("ContextMenu_SOption_RoleplayMessage"),options,getText("ContextMenu_SOption_RoleplayMessageDesc"))
-
-		y = y + spacing
-
-		local options = NPC_Options_OffOn()
-		self:addCustomCombo('NoPreSetSpawn',splitpoint,y,comboWidth,getText("ContextMenu_SD_NoPreSetSpawn"),options,getText("ContextMenu_SD_NoPreSetSpawnDesc"))
-		
-	y = y + spacing4x
-
 		local options = NPC_Options_ZeroToOneHundred()
 		self:addCustomCombo('WepSpawnRate',splitpoint,y,comboWidth,getText("ContextMenu_SOption_WepSpawnRate"),options,getText("ContextMenu_SOption_WepSpawnRateDesc"))
 		
@@ -545,7 +536,19 @@ if index then
 		
 		local options = NPC_Options_OffOn()
 		self:addCustomCombo('WifeSpawn',splitpoint,y,comboWidth,getText("ContextMenu_SOption_WifeSpawn"),options,getText("ContextMenu_SOption_WifeSpawnDesc"))
+
+	y = y + spacing4x
+	
+		local options = {"3","4","5","6","7","8","9","10"}
+		self:addCustomCombo('Option_FollowDistance',splitpoint,y,comboWidth,getText("ContextMenu_SOption_FollowGlobalRange"),options,getText("ContextMenu_SOption_FollowGlobalRangeDesc"))
 		
+	y = y + spacing
+		
+		local options = NPC_Options_OffOn()
+		self:addCustomCombo('Option_Perception_Bonus',splitpoint,y,comboWidth,getText("ContextMenu_SOption_PerceptionBonus"),options,getText("ContextMenu_SOption_PerceptionBonusDesc"))
+
+
+
 	y = y + spacing4x
 
 		local options = 
@@ -557,11 +560,6 @@ if index then
 		self:addCustomCombo('SurvivorFriendliness',splitpoint,y,comboWidth,getText("ContextMenu_SOption_SurvivorFriendliness"),options,getText("ContextMenu_SOption_SurvivorFriendlinessDesc"))
 		
 	y = y + spacing
-	
-		local options = {"3","4","5","6","7","8","9","10"}
-		self:addCustomCombo('Option_FollowDistance',splitpoint,y,comboWidth,getText("ContextMenu_SOption_FollowGlobalRange"),options,getText("ContextMenu_SOption_FollowGlobalRangeDesc"))
-		
-	y = y + spacing
 		
 		local options = 
 		{
@@ -569,6 +567,11 @@ if index then
 			getText("ContextMenu_SD_Brave"), getText("ContextMenu_SD_VeryBrave")
 		}
 		self:addCustomCombo('Bravery',splitpoint,y,comboWidth,getText("ContextMenu_SOption_SurvivorBravery"),options,getText("ContextMenu_SOption_SurvivorBraveryDesc"))
+		
+	y = y + spacing
+
+		local options = NPC_Options_OffOn()
+		self:addCustomCombo('NoPreSetSpawn',splitpoint,y,comboWidth,getText("ContextMenu_SD_NoPreSetSpawn"),options,getText("ContextMenu_SD_NoPreSetSpawnDesc"))
 		
 	y = y + spacing4x
 
