@@ -516,7 +516,16 @@ if index then
 
 		local options = {getText("ContextMenu_SD_PVPOff"),getText("ContextMenu_SD_PVPOn")}
 		self:addCustomCombo('Option_ForcePVP',splitpoint,y,comboWidth,getText("ContextMenu_SD_PVPInfoBar"),options,getText("ContextMenu_SD_PVPInfoBarDesc"))
-		
+	
+	y = y + spacing
+	
+	local options = 
+	{
+		getText("ContextMenu_SD_Off"),
+		getText("ContextMenu_SD_On")
+	}
+	self:addCustomCombo('RoleplayMessage',splitpoint,y,comboWidth,getText("ContextMenu_SOption_RoleplayMessage"),options,getText("ContextMenu_SOption_RoleplayMessageDesc"))
+
 	y = y + spacing
 	
 		local options = NPC_Options_ZeroToOneHundred()
