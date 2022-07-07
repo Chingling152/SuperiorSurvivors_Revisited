@@ -45,10 +45,13 @@ end
 
 
 function getSpeech(key)
-	if(not SurvivorSpeechTable[key]) then return "?" end
+	if(not SurvivorSpeechTable[key]) then 
+		return "?" 
+	end
+	
 	local result = ZombRand(1,#SurvivorSpeechTable[key]);
 	return tostring(SurvivorSpeechTable[key][result]);
- end
+end
 
 
 SurvivorPerks = {
@@ -80,6 +83,14 @@ SurvivorPerks = {
 function getAPerk()
     local result = ZombRand(size(SurvivorPerks)-1)+1;
     return SurvivorPerks[result];
+end
+
+function size(a)
+	local i = 1
+	 	while a[i] do
+			i = i + 1
+	 	end
+ 	return i;
 end
 
 
