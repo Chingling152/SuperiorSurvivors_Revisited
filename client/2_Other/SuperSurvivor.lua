@@ -2040,7 +2040,7 @@ end
 
 function SuperSurvivor:Companion_DoSixthSenseScan()
 
-	local atLeastThisClose = 2;
+	local atLeastThisClose = 3;
 	local spottedList = self.player:getCell():getObjectList()
 	local closestSoFar = 3
 	local closestSurvivorSoFar = 3
@@ -2078,9 +2078,11 @@ function SuperSurvivor:Companion_DoSixthSenseScan()
 						if(tempdistance < 1) and (character:getZ() == self.player:getZ()) then 
 							self.EnemiesOnMe = self.EnemiesOnMe + 1 
 						end
-						if(tempdistance < dangerRange) and (instanceof(character,"IsoZombie")) and (character:getZ() == self.player:getZ()) then
+						if(tempdistance < dangerRange) and (instanceof(character,"IsoZombie")) and (character:getZ() == self.player:getZ()) and not (self:getGroupRole() == "Companion") then
 							self.dangerSeenCount = self.dangerSeenCount + 1
-							print("self.dangerSeenCount = "..tostring(self.dangerSeenCount))
+							self:DebugSay("self.dangerSeenCount = "..tostring(self.dangerSeenCount))
+							--else
+							--self:DebugSay("self.dangerSeenCount IS NOT WORKING, BUT HERE'S THE AMOUNT ANYWAYS = "..tostring(self.dangerSeenCount))
 						end
 						if(not CanSee) or (CanSee) then -- added 'not' to it so enemy can sense behind them for a moment
 							self.seenCount = self.seenCount + 1 
@@ -2371,7 +2373,7 @@ function SuperSurvivor:NPC_CheckPursueScore()
 			return zRangeToPursue
 		end	
 
-		if (self:getTaskManager():getCurrentTask() == "Enter New Building") then
+		if (self:getTaskManager():getCurrentTask() == "Enter New Building") and not (self:RealCanSee(self.LastEnemeySeen)) then
 			self:zDebugSayPTSC(zRangeToPursue,"0_EnteringNewBuilding")
 			zRangeToPursue = 0
 			return zRangeToPursue
@@ -2488,28 +2490,31 @@ function SuperSurvivor:Task_IsPursue_SC()
 	
 --	if (self.LastEnemeySeen == nil) or (self.LastSurvivorSeen == nil) and (self.seenCount < 5) and (self:getGroupRole() ~= "Companion") then
 --	if (self.LastEnemeySeen == nil) or (self.LastSurvivorSeen == nil) and (self.seenCount < 1) and (self:getGroupRole() ~= "Companion") then
-	if (self.LastEnemeySeen == nil) and (self:inFrontOfDoor() == nil)  then
+	if (self.LastEnemeySeen == nil)  then
 		self:DoHumanEntityScan()
 	end
 	
-	if (self:inFrontOfDoor() ~= nil) and (Enemy_Is_a_Human) and not (Enemy_Is_a_Zombie) then
-		self.LastEnemeySeen = nil
-		return false
-	end
+	-- This was a test, it didn't work very well. It was an attempt to block door spam but other things are doing that already.
+	--if (self:inFrontOfDoor() ~= nil) and (getDistanceBetween(self.LastEnemeySeen,self.player) >= 8) and (Enemy_Is_a_Human) and not (Enemy_Is_a_Zombie) then
+	--	self.LastEnemeySeen = nil
+	--	self:DebugSay("Forcing lastenemyseen to be nil")
+	--	return false
+	--end
+	
 	
 	
 	if (self.LastEnemeySeen ~= nil) and (self.player ~= nil) then
-	
 		local Distance_AnyEnemy = getDistanceBetween(self.LastEnemeySeen,self.player)
 		local zNPC_AttackRange  = self:isEnemyInRange(self.LastEnemeySeen)
-	
+		
 		if (self:NPC_CheckPursueScore() > Distance_AnyEnemy ) then -- Task priority checker
 			if (self:hasWeapon())
 			--	and (self:Task_IsAttack() and (not zNPC_AttackRange)) 		
 				and (self:Task_IsNotThreaten())
+				and (zNPC_AttackRange)
 				and (self:Task_IsNotPursue())
 				and (self:Task_IsNotSurender())
-				and (self:Task_IsNotAttemptEntryIntoBuilding() )
+			--	and (self:Task_IsNotAttemptEntryIntoBuilding() )
 				and (self:isWalkingPermitted())
 			--	and ((self:isEnemy(self.LastEnemeySeen)) or (self:isEnemy(self.LastSurvivorSeen)))
 			  then
@@ -2531,6 +2536,7 @@ function SuperSurvivor:Task_IsPursue_SC()
 	end
 	
 	-- return true
+	
 end
 
 
@@ -2545,6 +2551,7 @@ end
 
 
 -- Verifier level tasks. This will check to make sure the task itself isn't already active, to activate
+-- Update: there needs to be a better way for this
 function SuperSurvivor:NPCTask_Clear()
 	self:getTaskManager():clear()
 end
@@ -2881,18 +2888,19 @@ function SuperSurvivor:update()
 	
 	self:DoVision() -- Moving this up to the top
 	
---																				-- I know this is 'not companion' but the function works almost too well not to use.
---	if (getDistanceBetween(self.player,getSpecificPlayer(0)) < 10) then			-- The test line, there's no need to let this be for debug options, it adds 10x lag. 
-		if (Option_Perception_Bonus == 2) then									-- The in game option from supersurvivorsmod.lua
-			if (not (self:getGroupRole() == "Companion")) then 					-- See how this line is? this is the ONLY WAY I could get the follower to accept 'is not a follower'. I'm bad at math logic.
-				if (not (self:usingGun()) and (self.isHostile == true)) then	-- Hostiles with guns are banned from using this. It makes them very OP (Until further notice)
-					if (not (self:RealCanSee(self.LastEnemeySeen))) then		-- This in theory should make the NPC re-scan for new entities around them
+--																					-- I know this is 'not companion' but the function works almost too well not to use.
+--	if (getDistanceBetween(self.player,getSpecificPlayer(0)) < 10) then				-- The test line, there's no need to let this be for debug options, it adds 10x lag. 
+		if (Option_Perception_Bonus == 2) then										-- The in game option from supersurvivorsmod.lua
+			if (not (self:getGroupRole() == "Companion")) then 						-- See how this line is? this is the ONLY WAY I could get the follower to accept 'is not a follower'. I'm bad at math logic.
+				--if (not (self:usingGun()) and (self.isHostile == true)) then		-- Hostiles with guns are banned from using this. It makes them very OP (Until further notice)
+
+				--	if (self.LastEnemeySeen ~= nil) and (getDistanceBetween(self.player,self.LastEnemeySeen) > 1) then		-- This in theory should make the NPC re-scan for new entities around them
 						self:Companion_DoSixthSenseScan() 
-					end
+				--	end
 				--	print("	========================	"..tostring(self:getName()).." = ".."Sixth sense ====TRUE====")
 				--else
 				--	print("	========================	"..tostring(self:getName()).." = ".."Sixth sense ====FALSE PATH A====")
-				end
+				--end
 			--else
 			--	print("	========================	"..tostring(self:getName()).." = ".."Sixth sense ====FALSE PATH B ====")
 			end
@@ -3006,7 +3014,7 @@ function SuperSurvivor:NPC_ManageLockedDoors()
 	if (self:getGroupRole() == "Companion") then self.StuckDoorTicks = 0 end
 	
 	
-	if ((self:inFrontOfLockedDoorAndIsOutside() == true) or (self:NPC_IFOD_BarricadedInside() == true)) then
+	if ((self:inFrontOfLockedDoorAndIsOutside() == true) or (self:NPC_IFOD_BarricadedInside() == true) or (self:inFrontOfBarricadedWindowAlt() )) then
 		self.StuckDoorTicks = self.StuckDoorTicks + 1
 	
 		-- Once the timer strikes 11
@@ -3027,10 +3035,18 @@ function SuperSurvivor:NPC_ManageLockedDoors()
 					self:getTaskManager():AddToTop(WanderTask:new(self))
 					self:getTaskManager():AddToTop(FindUnlootedBuildingTask:new(self))
 					self:getTaskManager():AddToTop(WanderTask:new(self))
-				end					
-				self:DebugSay("NPC_ManageLockedDoors - NPC refused to leave door, forcing clear task!")			
-				self.StuckDoorTicks = 0	
-				
+					self:DebugSay("NPC_ManageLockedDoors - NPC refused to leave door, trying more measure!")	
+				end				
+				if (self.StuckDoorTicks > 15) then
+					if (self.player:getModData().isHostile == true) then -- Not a player's base allie
+						self.lastenemyseen = nil
+						self:getTaskManager():clear()
+						self:getTaskManager():AddToTop(FleeTask:new(self))
+						self:getTaskManager():AddToTop(FleeFromHereTask:new(self, self:Get():getCurrentSquare()))
+						self:DebugSay("NPC_ManageLockedDoors - THAT'S IT, NPC refuses to list, enforcing drastic measures!")
+						self.StuckDoorTicks = 0	
+					end
+				end
 			end
 			
 		end
@@ -4036,7 +4052,7 @@ end
 
 -- The new function that will now control NPC attacking. Not perfect, but. Cleaner code, and works better-ish.
 function SuperSurvivor:NPC_Attack(victim) -- New Function 
-
+	
 	-- 6/21/2022 - Come to think of it, I could use  "if (self:IsNOT_AtkTicksZero()) or (self:CanAttackAlt() == false) then" but may need to check how the timer works.
 	-- Create the attack cooldown. (once 0, the npc will do the 'attack' then set the time back up by 1, so anti-attack spam method)
 	-- note: don't use self:CanAttackAlt() in this if statement. it's already being done in this function.
@@ -4129,12 +4145,22 @@ end
 ---@return number represents the damage that the weapon will give if hits
 function SuperSurvivor:getWeaponDamage(weapon,distance)
 	if (weapon == nil) then
+	--	print("weapon returned a nil value, no weapon found")
 		return 0
 	end
 
-	local damage = ZombRand(weapon:getMinDamage(), weapon:getMaxDamage())
-	damage = damage - (damage * (distance * 0.1))
-
+--	local damage = ZombRand(weapon:getMinDamage(), weapon:getMaxDamage())
+--	damage = damage - (damage * (distance * 0.1))
+	
+	--local Multiplier = Option_NPC_AttackMultiplier 
+	-- local minrange = self:getMinWeaponRange() + 0.1
+	local damage = 0
+		  damage = (weapon:getMaxDamage() * ZombRand(10))
+		  damage = damage - (damage * (distance * 0.1))	
+	
+	--print("weapon returned "..tostring(damage))
+	--print("")
+	
 	return damage
 end
 
@@ -4197,13 +4223,14 @@ function SuperSurvivor:Attack(victim)
 
 						local dice = ZombRand(0,100)
 
-						-- print("---------")
-						-- print("dice : " .. tostring(dice))
-						-- print("damage : " .. tostring(damage))
-						-- print("hitChance : " .. tostring(hitChance))
-						-- print("---------")
-
-						if (hitChance >= dice)then
+					--	 print("---------")
+					--	 print("dice : " .. tostring(dice))
+					--	 print("damage : " .. tostring(damage))
+					--	 print("hitChance : " .. tostring(hitChance))
+					--	 print("---------")
+					
+						-- Added RealCanSee to see if it works | and (damage > 0)
+						if (hitChance >= dice) and (damage > 0) and (self:RealCanSee(victim)) then
 							victim:Hit(weapon, self.player, damage, false, 1.0, false)
 							self:DebugSay("I HIT THE GUNSHOT!")
 							self.AtkTicks = 1

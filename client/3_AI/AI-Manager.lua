@@ -355,23 +355,10 @@ function AIManager(TaskMangerIn)
 	if not (AiNPC_Job_Is(NPC,"Companion"))  then
 		if (ASuperSurvivor:Task_IsPursue_SC() == true) and (Distance_AnyEnemy <= 9) and (Distance_AnyEnemy < NPC:NPC_CheckPursueScore() )   then
 			if ( NPC:NPC_FleeWhileReadyingGun()) then
-				
-				-- To make SURE the NPC does not pursue further
-				if  (Distance_AnyEnemy > NPC:NPC_CheckPursueScore() * 2) then
-					NPC.LastEnemeySeen = nil
-					TaskMangerIn:clear()
-					NPC:AddToTop(WanderInBaseTask:new(NPC)) -- We don't want that NPC purusing a target far away
-					NPC:DebugSay("Forget about that loser")
-				end
-				
-				-- If all checks out, pursue target
-				TaskMangerIn:AddToTop(PursueTask:new(ASuperSurvivor,ASuperSurvivor.LastEnemeySeen))
-				
+				TaskMangerIn:AddToTop(PursueTask:new(ASuperSurvivor,ASuperSurvivor.LastEnemeySeen)) -- If all checks out, pursue target
 			end
 		end
-	end
-
-
+	end	
 
 	-- I haven't tampered with this one, it does OK for the most part. 
 	-- Bug: If you shoot the gun and it has nothing in it, the NPC will still keep their hands up 
@@ -448,13 +435,14 @@ function AIManager(TaskMangerIn)
 	-- New: To attempt players that are NOT trying to encounter a fight, 
 	-- should be able to run away. maybe a dice roll for the future?
 	-- ----------------------------- --
-	if (EnemyIsSurvivor) and (TaskMangerIn:getCurrentTask() == "Threaten") and (Distance_AnyEnemy > 10) then
-		TaskMangerIn:AddToTop(WanderTask:new(ASuperSurvivor))
-		TaskMangerIn:AddToTop(AttemptEntryIntoBuildingTask:new(ASuperSurvivor,nil))	
-		TaskMangerIn:AddToTop(WanderTask:new(ASuperSurvivor))
-		TaskMangerIn:AddToTop(FindBuildingTask:new(ASuperSurvivor))
+	if not (AiNPC_Job_Is(NPC,"Companion"))  then
+		if (EnemyIsSurvivor) and (TaskMangerIn:getCurrentTask() == "Threaten") and (Distance_AnyEnemy > 10) then
+			TaskMangerIn:AddToTop(WanderTask:new(ASuperSurvivor))
+			TaskMangerIn:AddToTop(AttemptEntryIntoBuildingTask:new(ASuperSurvivor,nil))	
+			TaskMangerIn:AddToTop(WanderTask:new(ASuperSurvivor))
+			TaskMangerIn:AddToTop(FindBuildingTask:new(ASuperSurvivor))
+		end	
 	end
-	
 	
 	-- ----------------------------- --
 	-- find safe place if injured and enemies near		this needs updating
@@ -510,14 +498,18 @@ function AIManager(TaskMangerIn)
 		--and ( ((NPC:getSeenCount() > 4) and (NPC:isEnemyInRange()) and (EnemyIsZombie)) or (ASuperSurvivor:isTooScaredToFight()) )
 		and 
 		( 
-		   (not ASuperSurvivor:hasWeapon() and ( (ASuperSurvivor:getDangerSeenCount() > 1) or (NPC:getSeenCount() >= 4)) )  -- maybe add a 'or (ASuperSurvivor:isTooScaredToFight())' after dangerseen
+		   (not ASuperSurvivor:hasWeapon() and (ASuperSurvivor:usingGun() == false) and ((ASuperSurvivor:getDangerSeenCount() > 0) and (NPC:getSeenCount() >= 3)) ) -- If one enemy is VERY close & see 3 or more enemies
 --		or ( ((ASuperSurvivor:needToReload()) or (ASuperSurvivor:needToReadyGun(weapon))) and ( (ASuperSurvivor:getDangerSeenCount() > 1) or ((NPC:getSeenCount() >= 2) and (Distance_AnyEnemy <= 3))) )  -- AH HA, gun running away for non-companions when the npc is trying to reload or ready gun
-		or ( ((ASuperSurvivor:needToReload()) or (ASuperSurvivor:needToReadyGun(weapon))) and ( (ASuperSurvivor:getDangerSeenCount() > 1 and (Distance_AnyEnemy < 3) and (EnemyIsZombie)) or ((NPC:getSeenCount() >= 2) and (Distance_AnyEnemy <= 2) and (EnemyIsZombie)) ) )  -- AH HA, gun running away for non-companions when the npc is trying to reload or ready gun
+		or ( ((ASuperSurvivor:needToReload()) or (ASuperSurvivor:needToReadyGun(weapon))) and ( (ASuperSurvivor:getDangerSeenCount() > 1 and (Distance_AnyEnemy < 3) and (EnemyIsZombie)) 	 or 	((NPC:getSeenCount() >= 2) and (Distance_AnyEnemy <= 2) and (EnemyIsZombie)) ) )  -- AH HA, gun running away for non-companions when the npc is trying to reload or ready gun
+		or ( ((ASuperSurvivor:needToReload()) or (ASuperSurvivor:needToReadyGun(weapon))) and ( (ASuperSurvivor:getDangerSeenCount() > 1 and (Distance_AnyEnemy <= 2) and (EnemyIsSurvivor)) or 	( (Distance_AnyEnemy <= 2) and (EnemyIsSurvivor)) ) )  							  -- AH HA, gun running away for non-companions when the npc is trying to reload or ready gun
 		or (IHaveInjury and ASuperSurvivor:getDangerSeenCount() > 0) 
 		or (EnemyIsSurvivorHasGun and ASuperSurvivor:hasGun() == false)
 		or (ASuperSurvivor:isTooScaredToFight())
 		 
 		 -- To check for EnemyIsZombie, which will look there and go 'OH GOD, I can't fight THIS many zombies' 
+		 -- Update: I may of already fixed this issue on the lines above... 
+		 -- now that I understand that getDangerSeenCount means if something is like SUPER close to the npc, you can simulate 
+		 -- the idea of 'there's an enemy basically on me and I see more in the distance, I don't think this is worth fighting'
 		or (
 				(   (NPC:getSeenCount() > 4) and (NPC:isEnemyInRange()) and (EnemyIsZombie) and (NPC:hasGun())		)
 			or
@@ -662,6 +654,17 @@ function AIManager(TaskMangerIn)
 		end	
 	end
 	
+	-- ----------------------------- --
+	-- 	Shift task quickly to attack -- 
+	--  QuickFix for the stuck task  --
+	-- ----------------------------- --
+	--if not (AiNPC_Job_Is(NPC,"Companion"))  then
+	--	if (NPC.LastEnemeySeen ~= nil) and ((NPC:isInSameRoom(NPC.LastEnemeySeen)) or (NPC:RealCanSee(NPC.LastEnemeySeen))) and (AiNPC_Task_Is(NPC,"Enter New Building")) then
+	--		TaskMangerIn:AddToTop(AttackTask:new(ASuperSurvivor))
+	--		NPC:DebugSay("Shifting from Enter New Building to Attack! Task! Reference Number ENB_T_PT_0001")
+	--	end
+	--end
+
 	-- ---------------------------------------------------------- --
 	-- ------ END -------- Shared AI ------ END ----------------- --
 	-- ---------------------------------------------------------- --
@@ -675,9 +678,14 @@ function AIManager(TaskMangerIn)
 	
 	if(getSpecificPlayer(0) == nil) or (not getSpecificPlayer(0):isAsleep()) then
 		SafeToGoOutAndWork = true
-		local AutoWorkTaskTimeLimit = 300
+		local AutoWorkTaskTimeLimit = 300 
 		
-		--print("basetasks " .. ASuperSurvivor:getName().." "..ASuperSurvivor:getAIMode() .. " " .. TaskMangerIn:getCurrentTask() .. " " .. ASuperSurvivor:getGroupRole() .. " " .. ASuperSurvivor:getCurrentTask() .. " " .. tostring(IsInAction))
+		
+		if (NPC:getName() ~= nil) and (NPC:getAIMode() ~= nil) and (NPC:getCurrentTask() ~= nil) and (NPC:getGroupRole() ~= nil) and (NPC:getCurrentTask() ~= nil) and (IsInAction ~= nil) then
+			print("basetasks " .. ASuperSurvivor:getName().." "..ASuperSurvivor:getAIMode() .. " " .. TaskMangerIn:getCurrentTask() .. " " .. ASuperSurvivor:getGroupRole() .. " " .. ASuperSurvivor:getCurrentTask() .. " " .. tostring(IsInAction))
+			print("")
+		end
+		
 		if(not SurvivorsFindWorkThemselves or not IsInBase) and (ASuperSurvivor:getGroupRole() == "Guard") and (ASuperSurvivor:getCurrentTask() == "None") and (not IsInAction) and (ZombRand(4)==0) then
 				
 			local randresult = ZombRand(10) + 1
@@ -760,7 +768,7 @@ function AIManager(TaskMangerIn)
 					TaskMangerIn:AddToTop(FollowTask:new(ASuperSurvivor,getSpecificPlayer(0))) 	
 
 			elseif(SurvivorsFindWorkThemselves) then
-				--print("yes im a worker: "..tostring(ASuperSurvivor:Get():getBodyDamage():getWetness()))
+				print("yes im a worker: "..tostring(ASuperSurvivor:Get():getBodyDamage():getWetness()))
 
 				--if(RainManager.isRaining()) and (ASuperSurvivor:Get():getBodyDamage():getWetness() > 0.5) and (ASuperSurvivor:Get():isOutside()) and (TaskMangerIn.TaskUpdateLimit ~= 0) and (TaskMangerIn:getCurrentTask() ~= "Enter New Building") and (TaskMangerIn:getCurrentTask() ~= "Find Building") then
 				--	ASuperSurvivor:Speak(getText("ContextMenu_SD_RainingGoInside"))
@@ -783,7 +791,7 @@ function AIManager(TaskMangerIn)
 						local job = "Relax"
 						-- idle tasks
 						jobScores["Relax"] = 0 + math.floor(ASuperSurvivor:Get():getStats():getBoredom() * 20.0)
-						jobScores["Wash Self"] = 0
+						jobScores["Wash Self"] = 1
 
 						-- maintenance
 						jobScores["Clean Inventory"] = 2
@@ -984,7 +992,7 @@ function AIManager(TaskMangerIn)
 	
 	if(ASuperSurvivor:getAIMode() == "Random Solo") and (TaskMangerIn:getCurrentTask() ~= "Listen") and (TaskMangerIn:getCurrentTask() ~= "Take Gift") then -- solo random survivor AI flow	
 
-		if(TaskMangerIn:getCurrentTask() == "None") and (ASuperSurvivor.TargetBuilding ~= nil) and (not ASuperSurvivor:getBuildingExplored(ASuperSurvivor.TargetBuilding)) then
+		if(TaskMangerIn:getCurrentTask() == "None") and (ASuperSurvivor.TargetBuilding ~= nil) and (not ASuperSurvivor:getBuildingExplored(ASuperSurvivor.TargetBuilding)) and (not ASuperSurvivor:isEnemyInRange(ASuperSurvivor.LastEnemeySeen)) then
 			TaskMangerIn:AddToTop(AttemptEntryIntoBuildingTask:new(ASuperSurvivor, ASuperSurvivor.TargetBuilding))
 			ASuperSurvivor:DebugSay("Attempt entry into building Task condition met in AI manager! Reference number B_0001")
 
@@ -995,14 +1003,14 @@ function AIManager(TaskMangerIn)
 			ASuperSurvivor:DebugSay("Find Unlooted Building Task condition met in AI manager! Reference number B_0002")
 		end
 		
-		if(ASuperSurvivor.TargetBuilding ~= nil) or (ASuperSurvivor:inUnLootedBuilding()) then
+		if(ASuperSurvivor.TargetBuilding ~= nil) or (ASuperSurvivor:inUnLootedBuilding())then
 			if ASuperSurvivor.TargetBuilding == nil then ASuperSurvivor.TargetBuilding = ASuperSurvivor:getBuilding() end
-			if (not ASuperSurvivor:hasWeapon()) and (TaskMangerIn:getCurrentTask() ~= "Loot Category") and (ASuperSurvivor:getDangerSeenCount() <= 0) and (ASuperSurvivor:inUnLootedBuilding()) then
+			if (not ASuperSurvivor:hasWeapon()) and (TaskMangerIn:getCurrentTask() ~= "Loot Category") and (ASuperSurvivor:getDangerSeenCount() <= 0) and (ASuperSurvivor:inUnLootedBuilding()) and (NPC:isTargetBuildingClaimed(ASuperSurvivor.TargetBuilding) == false) then
 				ASuperSurvivor:DebugSay("Loot Task condition met in AI manager! Reference number B_0003")
 				TaskMangerIn:AddToTop(LootCategoryTask:new(ASuperSurvivor,ASuperSurvivor.TargetBuilding,"Food",2))
 				TaskMangerIn:AddToTop(EquipWeaponTask:new(ASuperSurvivor))
 				TaskMangerIn:AddToTop(LootCategoryTask:new(ASuperSurvivor,ASuperSurvivor.TargetBuilding,"Weapon",2))
-			elseif (ASuperSurvivor:hasRoomInBag()) and (TaskMangerIn:getCurrentTask() ~= "Loot Category") and (ASuperSurvivor:getDangerSeenCount() <= 0) and (ASuperSurvivor:inUnLootedBuilding()) then
+			elseif (ASuperSurvivor:hasRoomInBag()) and (TaskMangerIn:getCurrentTask() ~= "Loot Category") and (ASuperSurvivor:getDangerSeenCount() <= 0) and (ASuperSurvivor:inUnLootedBuilding()) and (NPC:isTargetBuildingClaimed(ASuperSurvivor.TargetBuilding) == false) then
 				TaskMangerIn:AddToTop(LootCategoryTask:new(ASuperSurvivor,ASuperSurvivor.TargetBuilding,"Food",1))
 				ASuperSurvivor:DebugSay(" Task condition met in AI manager! Reference number B_0004")
 			end
