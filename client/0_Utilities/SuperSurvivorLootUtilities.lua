@@ -144,7 +144,7 @@ function FindAndReturnBestWeapon(container)
 
 		for i=1, itemSize-1 do
 			local item = items:get(i)
-			if(item ~= nil and item:getCategory() == "Weapon") then
+			if(item ~= nil) and (item:getCategory() == "Weapon") then
 				if (item:getMaxDamage() > 0.1) and (bestItem == nil or bestItem:getMaxDamage() < item:getMaxDamage()) then 
 
 					bestItem = item 
@@ -191,9 +191,9 @@ function FindAndReturnFood(thisItemContainer)
 
 		for i=1, count-1 do
 			local item = items:get(i)
-			if(item ~= nil and item:getCategory() == "Food") then			
-				if (not item:getPoisonPower() > 1 and not has_value(FoodsToExlude,item:getType())) then 
-					debugItem("food",bestItem:getDisplayName(),bestItem:getMaxDamage())
+			if(item ~= nil) and (item:getCategory() == "Food") then			
+				if not( item:getPoisonPower() > 1 ) and not (has_value(FoodsToExlude,item:getType())) then 
+					debugItem("food",item:getDisplayName(),"")
 					return item 
 				end
 			end
@@ -322,7 +322,7 @@ function FindAndReturnBestFoodOnFloor(sq, survivor)
 		bestScore = -10
 	end
 
-	items = sq:getWorldObjects()
+	local items = sq:getWorldObjects()
 	local count = items:size()
 
 	if count > 0 then
@@ -330,16 +330,15 @@ function FindAndReturnBestFoodOnFloor(sq, survivor)
 
 		for j=0, count-1 do
 			local item =items:get(j):getItem()
-			if(item ~= nil) then
-				if (item:getCategory() == "Food") and not (item:getPoisonPower() > 1) and (not has_value(FoodsToExlude, item:getType())) then
-					local Score = GetFoodScore(item)
-	
-					if Score > bestScore then
-						bestFood = item
-						bestScore = Score
-						debugItem("best food", bestFood:getDisplayName(), bestScore)
-					end
+			if (item ~= nil) and (item:getCategory() == "Food") and not (item:getPoisonPower() > 1) and (not has_value(FoodsToExlude, item:getType())) then
+				local Score = GetFoodScore(item)
+
+				if Score > bestScore then
+					bestFood = item
+					bestScore = Score
+					debugItem("best food", bestFood:getDisplayName(), tostring(bestScore))
 				end
+
 			end
 		end
 
