@@ -43,7 +43,8 @@ function getPresetColor(Color)
 
 end
 
-
+--- gets a speech text
+---@param key any
 function getSpeech(key)
 	if(not SurvivorSpeechTable[key]) then 
 		return "?" 
@@ -53,6 +54,14 @@ function getSpeech(key)
 	return tostring(SurvivorSpeechTable[key][result]);
 end
 
+function getName(key)
+	if(not SurvivorNameTable[key]) then 
+		return "?" 
+	end
+	
+	local result = ZombRand(1,#SurvivorNameTable[key]);
+	return tostring(SurvivorNameTable[key][result]);
+end
 
 SurvivorPerks = {
 	"Aiming",
