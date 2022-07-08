@@ -4,43 +4,43 @@
 local enableDebugLoot = false
 
 local function debugLoot(text)
-	if enableDebugContext then
+	if enableDebugLoot then
 		print(text)
 	end
 end
 
 local function debugMethodName(methodName)
-	if enableDebugContext then
+	if enableDebugLoot then
 		print(" ----- " ..  methodName .. " ----- ")
 	end
 end
 
 local function debugItemsFound(count)
-	if enableDebugContext then
+	if enableDebugLoot then
 		print(tostring(count) .. " items found")
 	end
 end
 
 local function debugItemNotFound(category)
-	if enableDebugContext then
+	if enableDebugLoot then
 		print(category .. " not found")
 	end
 end
 
 local function debugEmptyContainer()
-	if enableDebugContext then
+	if enableDebugLoot then
 		print("container is empty")
 	end
 end
 
 local function debugItem(category,itemName, value)
-	if enableDebugContext then
+	if enableDebugLoot then
 		print(category .. " : " .. tostring(itemName) .. " - " .. tostring(value))
 	end
 end
 
 local function debugFoodScore(bullet ,change ,score)
-	if enableDebugContext then
+	if enableDebugLoot then
 		print("\t" .. bullet .. " " .. change .. "\n\t score : " .. tostring(score))
 	end
 end
