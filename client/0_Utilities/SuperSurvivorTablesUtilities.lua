@@ -1,6 +1,6 @@
 -- this file only has methods related to deal with files
 
-local modid = "SuperiorSubparSurvivors"
+local modid = "SuperiorSurvivors_RevisitedDev"
 
 --- DEBUG ---
 

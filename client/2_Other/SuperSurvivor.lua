@@ -1,4 +1,5 @@
 require "2_Other/SuperSurvivorPresetSpawns"
+require "2_Other/SuperSurvivorDebug"
 
 SuperSurvivor = {}
 SuperSurvivor.__index = SuperSurvivor
@@ -75,7 +76,9 @@ function SuperSurvivor:new(isFemale,square)
 	o.SquareWalkToAttempts = {}
 	o.SquaresExplored = {}
 	o.SquareContainerSquareLooteds = {}
-	for i=1, #LootTypes do o.SquareContainerSquareLooteds[LootTypes[i]] = {} end
+	for i=1, #LootTypes do 
+		o.SquareContainerSquareLooteds[LootTypes[i]] = {} 
+	end
 	
 	o:setBravePoints(SuperSurvivorBravery)
 	local Dress = "RandomBasic"
@@ -273,9 +276,9 @@ function SuperSurvivor:newSet(player)
 end
 
 function SuperSurvivor:spawnPlayer(square, isFemale)
-	--TODO : create SuperSurvivorFactory or inherit SurvivorFactory
+	logFunction("spawnPlayer")
 	local BuddyDesc
-	if(isFemale == nil ) then
+	if(isFemale == nil) then
 		BuddyDesc = SurvivorFactory.CreateSurvivor();
 	else 		
 		BuddyDesc = SurvivorFactory.CreateSurvivor(nil, isFemale);
@@ -289,6 +292,7 @@ function SuperSurvivor:spawnPlayer(square, isFemale)
 	end
 
 	local Buddy = IsoPlayer.new(getWorld():getCell(),BuddyDesc,square:getX(),square:getY(),Z)
+	logSurvivorPosition(Buddy)
 	
 	Buddy:setSceneCulled(false)
 	Buddy:setBlockMovement(true)
@@ -322,7 +326,8 @@ function SuperSurvivor:spawnPlayer(square, isFemale)
 		count = count + 1;
 	end
 	--
-	
+	logSurvivorPerks(Buddy)
+
 	local traits = Buddy:getTraits()
 	
 	Buddy:getTraits():add("Inconspicuous")
@@ -391,6 +396,9 @@ function SuperSurvivor:spawnPlayer(square, isFemale)
 	nameToSet = namePrefix .. nameToSet .. namePrefixAfter
 	
 	Buddy:setName(nameToSet);
+	logValue("survivor name", nameToSet)
+
+	logFunction("spawnPlayer")
 	return Buddy
 
 end
@@ -485,7 +493,6 @@ function SuperSurvivor:getFood()
 
 	return nil 
 end
-
 function SuperSurvivor:hasFood()	
 	return (self:getFood() ~= nil)
 end
@@ -502,6 +509,9 @@ function SuperSurvivor:getWater()
 
 	return nil 
 end
+function SuperSurvivor:hasWater()	
+	return (self:getWater() ~= nil)
+end
 
 function SuperSurvivor:DrinkFromObject(waterObject)
   local playerObj = self.player
@@ -514,10 +524,6 @@ function SuperSurvivor:DrinkFromObject(waterObject)
 	local waterConsumed = math.min(waterNeeded, waterAvailable)
 	ISTimedActionQueue.add(ISTakeWaterAction:new(playerObj, nil, waterConsumed, waterObject, (waterConsumed * 10) + 15));
 end
-
-function SuperSurvivor:hasWater()	
-	return (self:getWater() ~= nil)
-end
 --- END BASIC NEEDS ---
 
 --- BASES ---
@@ -529,7 +535,6 @@ function SuperSurvivor:getBaseBuilding()
 end
 
 function SuperSurvivor:isInBase()
-
 	if(self:getGroupID() == nil) then 
 		return false
 	else
@@ -4238,10 +4243,6 @@ end
 --- END HEALTH ---
 
 --- SAVEFILES ---
-function SuperSurvivor:saveFileExists()
-	return checkSaveFileExists("Survivor"..tostring(self:getID()))
-end
-
 function SuperSurvivor:getID()
 
 	if(instanceof(self.player,"IsoPlayer")) then return self.player:getModData().ID 
@@ -4249,9 +4250,7 @@ function SuperSurvivor:getID()
 
 end
 function SuperSurvivor:setID(id)
-
 	self.player:getModData().ID = id;
-
 end
 
 function SuperSurvivor:delete()
@@ -4274,18 +4273,23 @@ function SuperSurvivor:delete()
 end
 
 function SuperSurvivor:SaveSurvivorOnMap()
+	logFunctionUpdates("SaveSurvivorOnMap")
 
-	if self.player:getModData().RealPlayer == true then return false end
+	if self.player:getModData().RealPlayer == true then 
+		return
+	end
+
 	local ID = self.player:getModData().ID;
 	
 	if (ID ~= nil) then
-	
 		local x = math.floor(self.player:getX())
 		local y = math.floor(self.player:getY())
 		local z = math.floor(self.player:getZ())
 		local key = x .. y .. z
-		
-		if(not SurvivorMap[key]) then SurvivorMap[key] = {} end
+
+		if(not SurvivorMap[key]) then 
+			SurvivorMap[key] = {} 
+		end
 		
 		SurvivorLocX[ID] = x
 		SurvivorLocY[ID] = y
@@ -4296,11 +4300,13 @@ function SuperSurvivor:SaveSurvivorOnMap()
 			local removeFailed = false;
 			if(self.player:getModData().LastSquareSaveX ~= nil) then
 				local lastkey = self.player:getModData().LastSquareSaveX .. self.player:getModData().LastSquareSaveY .. self.player:getModData().LastSquareSaveZ
+				
 				if(lastkey) and ( SurvivorMap[lastkey] ~= nil ) then
 					table.remove(SurvivorMap[lastkey] , ID);
 				else 
 					removeFailed = true;
 				end
+
 			end
 			
 			if(removeFailed == false) then
@@ -4310,39 +4316,51 @@ function SuperSurvivor:SaveSurvivorOnMap()
 				self.player:getModData().LastSquareSaveY = y;
 				self.player:getModData().LastSquareSaveZ = z;
 			end
-		
 		end
-	
+	else
+		log("survivor without id")
 	end
+
+	logFunctionUpdates("SaveSurvivorOnMap")
 end
 
 function SuperSurvivor:SaveSurvivor()
+	logFunction("SaveSurvivor")
 	if self.player:getModData().RealPlayer == true then 
-		return false 
+		log("main player not saved")
+		logFunction("SaveSurvivor")
+		return 
 	end
 	
 	local ID = self.player:getModData().ID;
 	if(ID ~= nil) then
-		--local filename = getWorld():getGameMode() .. "-" .. getWorld():getWorld() .. "-" .. "Survivor"..tostring(ID);
 		local filename = getSaveDir() .. "Survivor"..tostring(ID);
 		self.player:save(filename);
-		--print("saved survivor "..tostring(ID))
+		logValue("saved survivor", ID)
 		if(self.player ~= nil and self.player:isDead() == false ) then
+			log("survivor is not dead")
 			self:SaveSurvivorOnMap()		
 		else			
 			local group = self:getGroup()
 			if(group) then 
-				--print("remove member "..self:getName().." from group because he died.")
+				log("survivor is dead")
 				group:removeMember(self) 
 			end
 		end
-		
+		logFunction("SaveSurvivor")
 	end
 end
 
+--- loads a survivor 
+--- It doesnt use "self" variable so it can be moved to other file 
+---@param square any the square that the survivor will be loaded
+---@param ID any the ID of the survivor (needs to be inside the savefiles)
 function SuperSurvivor:loadPlayer(square, ID)
+	logFunction("loadPlayer")
 	-- load from file if save file exists
-	if(ID == nil) or (checkSaveFileExists("Survivor"..tostring(ID))) then
+	if(ID == nil) or (not checkSaveFileExists("Survivor"..tostring(ID))) then
+		logError("survivor with id " .. ID .. " not found")
+		logFunction("loadPlayer")
 		return nil
 	else	
 		local BuddyDesc = SurvivorFactory.CreateSurvivor();
@@ -4353,7 +4371,7 @@ function SuperSurvivor:loadPlayer(square, ID)
 		--IsoPlayer.setInstance(realplayer);
 		Buddy:getInventory():emptyIt();
 		local filename = getSaveDir() .. "Survivor"..tostring(ID);
-		Buddy:load( filename );
+		Buddy:load(filename);
 		
 		Buddy:setX(square:getX())
 		Buddy:setY(square:getY())
@@ -4362,23 +4380,29 @@ function SuperSurvivor:loadPlayer(square, ID)
 		Buddy:setNPC(true);
 		Buddy:setBlockMovement(true)
 		Buddy:setSceneCulled(false)
+
+		logSurvivorSpawn(Buddy)
+		logSurvivorPosition(Buddy)
+
 		--Buddy:dressInRandomOutfit()
 		--Buddy:dressInNamedOutfit(Buddy:getRandomDefaultOutfit())
+		logFunction("loadPlayer")
 
 		return Buddy
 	end
 end
 
-function SuperSurvivor:saveFileExists()
-	return checkSaveFileExists("Survivor"..tostring(self:getID()))
-end
-
 function SuperSurvivor:reload()
+	logFunction("reload")
 	local cs = self.player:getCurrentSquare()
 	local id = self:getID()
+	logValue("survivor id",id)
+
 	self:delete()
 	self.player = self:spawnPlayer(cs,nil)
+
 	self:loadPlayer(cs,id)
+	logFunction("reload")
 end
 --- END SAVEFILES ---
 
