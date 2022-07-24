@@ -1979,7 +1979,9 @@ function SuperSurvivor:ReadyGun(weapon)
 	
 	local readyGun_AntiStuck_Ticks = 0
 
-	if(not weapon) or (not weapon:isAimedFirearm()) or readyGun_AntiStuck_Ticks >= 5 then return true end
+	if(not weapon) or (not weapon:isAimedFirearm()) or readyGun_AntiStuck_Ticks >= 5 then 
+		return true 
+	end
 	
 	if weapon:isJammed() then
 		weapon:setJammed(false)
@@ -2444,12 +2446,14 @@ function SuperSurvivor:CanAttackAlt()
 		return true
 	end
 end
+--TODO: join the attack functions
 -- The new function that will now control NPC attacking. Not perfect, but. Cleaner code, and works better-ish.
 function SuperSurvivor:NPC_Attack(victim) -- New Function 
 	
 	if (not self:Is_AtkTicksZero()) and (self:CanAttackAlt() == true) then
 		self:AtkTicks_Countdown()
-	return false end
+		return false 
+	end
 	
 	-- This is to force PVP so the player can fight back the hostile NPCs. This does NOT prevent hostile NPCs from being able to hit the player. -(This has been tested)-
 	if(instanceof(victim,"IsoPlayer") and IsoPlayer.getCoopPVP() == false) then
@@ -2482,8 +2486,12 @@ function SuperSurvivor:NPC_Attack(victim) -- New Function
 	if((RealDistance <= minrange) or zNPC_AttackRange) and (self.AtkTicks <= 0) and (self:CanAttackAlt() == true) and (self.player:NPCGetRunning() == false) then
 		victim:Hit(weapon, self.player, damage, false, 1.0, false)
 			-- To keep the NPC from spamming another entity, but give fighting chance for zeds
-			if (instanceof(victim,"IsoPlayer")) then self.AtkTicks = 2 end
-			if (instanceof(victim,"IsoZombie")) then self.AtkTicks = 1 end
+			if (instanceof(victim,"IsoPlayer")) then 
+				self.AtkTicks = 2 
+			end
+			if (instanceof(victim,"IsoZombie")) then 
+				self.AtkTicks = 1 
+			end
 	end	
 
 end
@@ -2560,110 +2568,144 @@ function SuperSurvivor:getGunHitChange(weapon,victim)
 	return hitChance - distance - coverValue -- TODO: change formula when coverValue != 0
 end
 
--- This is the old variant of the attack function. It should not be used for melee attacks. It works well with guns though, so... 
+--TODO: move it to attack task
+-- TODO: re-add rng	damage
+
+--- This is the old variant of the attack function. It should not be used for melee attacks. It works well with guns though, so...
+---@param victim any  
 function SuperSurvivor:Attack(victim)
-	
+	logFunction("Attack")
+
+	if(self.player == nil) then
+		logSurvivorStatus("survivor", self:getID() ,"can't attack", "reason : no player")
+		logFunction("Attack")
+		return
+	end
 	-- Create the attack cooldown. (once 0, the npc will do the 'attack' then set the time back up by 1, so anti-attack spam method)
 	-- note: don't use self:CanAttackAlt() in this if statement. it's already being done in this function. (Update: It works long as it's set to true)
 	if (not self:Is_AtkTicksZero()) and (self:CanAttackAlt() == true) then
 		self:AtkTicks_Countdown()
-	return false end
+		logSurvivorStatus("survivor", self:getID() ,"can't attack", "reason : cooldown")
+		logFunction("Attack")
+		return
+	end
 
-	--if(self.player:getCurrentState() == SwipeStatePlayer.instance()) then return false end -- already attacking wait
-	if(self.player:getModData().felldown) then return false end -- cant attack if stunned by an attack
+	if(self.player:getModData().felldown) then 
+		logSurvivorStatus("survivor", self:getID() ,"can't attack", "reason : survivor has fell down")
+		logFunction("Attack")
+		return 
+	end -- cant attack if stunned by an attack
 	
-	if not (instanceof(victim,"IsoPlayer") or instanceof(victim,"IsoZombie")) then return false end
+	if not (instanceof(victim,"IsoPlayer") or instanceof(victim,"IsoZombie")) then 
+		logSurvivorStatus("survivor", self:getID() ,"can't attack", "reason : target is not an enemy")
+		logFunction("Attack")
+		return 
+	end
+
 	if(self:WeaponReady()) then
+		logSurvivorStatus("Weapon is ready")
+
 		if(instanceof(victim,"IsoPlayer") and IsoPlayer.getCoopPVP() == false) then
 			ForcePVPOn = true;
 			SurvivorTogglePVP();
 		end
+		
 		self:DebugSay("Attack() is about to trigger a StopWalk!")
 		self:StopWalk()
 		self.player:faceThisObject(victim);
+
+		local distance = getDistanceBetween(self.player,victim)
+		local minrange = self:getMinWeaponRange() + 0.1
+		local weapon = self.player:getPrimaryHandItem();
 		
-		if(self.UsingFullAuto) then self.TriggerHeldDown = true end
-		if(self.player ~= nil) then 
-			local distance = getDistanceBetween(self.player,victim)
-			local minrange = self:getMinWeaponRange() + 0.1
-			local GunHitChance = 11 	-- ZombRand(0,5)	If you want random chance, remove the number and put the ZombRand in.
-			local weapon = self.player:getPrimaryHandItem();
-			
-			-- local damage = self:getWeaponDamage(weapon,distance)
-			-- For now disabling rng shooting, I just can't get it working
-			-- But at least the 'RealCanSee' works 
-			damage = weapon:getMaxDamage();
-			
-			self.player:NPCSetAiming(true)
-			self.player:NPCSetAttack(true)
+		-- local damage = self:getWeaponDamage(weapon,distance)
+		-- For now disabling rng shooting, I just can't get it working
+		-- But at least the 'RealCanSee' works 
+		local damage = weapon:getMaxDamage();
+		
+		self.player:NPCSetAiming(true)
+		self.player:NPCSetAttack(true)
 
-			if(distance < minrange) or (self.player:getPrimaryHandItem() == nil) then
-				victim:Hit(weapon, self.player, damage, true, 1.0, false) --self:Speak("Shove!"..tostring(distance).."/"..tostring(minrange))
-			else 
-				if (self.AtkTicks <= 0) then -- First to make sure it's okay to attack
-					if (self:hasGun()) then							
-						local hitChance = self:getGunHitChange(weapon,victim) 
-
-						local dice = ZombRand(0,100)
-
-					--	 print("---------")
-					--	 print("dice : " .. tostring(dice))
-					--	 print("damage : " .. tostring(damage))
-					--	 print("hitChance : " .. tostring(hitChance))
-					--	 print("---------")
+		if(distance < minrange) or (self.player:getPrimaryHandItem() == nil) then
+			victim:Hit(weapon, self.player, damage, true, 1.0, false)
+		else 
+			if (self.AtkTicks <= 0) then -- First to make sure it's okay to attack
+				if (self:hasGun()) then		
+					if(self.UsingFullAuto) then 
+						logSurvivorStatus("survivor", self:getID() ,"has automatic weapon")
+						self.TriggerHeldDown = true 
+					end
 					
-						-- Added RealCanSee to see if it works | and (damage > 0)
-						if (hitChance >= dice) and (damage > 0) and (self:RealCanSee(victim)) then
-							victim:Hit(weapon, self.player, damage, false, 1.0, false)
-							self:DebugSay("I HIT THE GUNSHOT!")
-							self.AtkTicks = 1
-						else
-							self:DebugSay("I MISSED THE GUNSHOT!")
-							self.AtkTicks = 1
-						end
-					else
+					local hitChance = self:getGunHitChange(weapon,victim) 
+					local dice = ZombRand(0,100)
+					-- Added RealCanSee to see if it works | and (damage > 0)
+					if (hitChance >= dice) and (damage > 0) and (self:RealCanSee(victim)) then
 						victim:Hit(weapon, self.player, damage, false, 1.0, false)
-						self:DebugSay("MELEE STRIKE! For some reason... I shouldn't be using this Attack function! Modder, fix this!")
+						self:DebugSay("I HIT THE GUNSHOT!")
+						logSurvivorAttack(self,victim,damage);
+						self.AtkTicks = 1
+					else
+						self:DebugSay("I MISSED THE GUNSHOT!")
+						log("survivor", self:getID() ,"missed the shot against the survivor", victim:getID())
 						self.AtkTicks = 1
 					end
+				else
+					victim:Hit(weapon, self.player, damage, false, 1.0, false)
+					logSurvivorAttack(self,victim,damage);
+					self:DebugSay("MELEE STRIKE! For some reason... I shouldn't be using this Attack function! Modder, fix this!")
+					self.AtkTicks = 1
 				end
+			else
+				logSurvivorStatus("survivor", self:getID() ,"can't attack", "reason : cooldown (2)") -- TODO : check if this condition is necessary
 			end
-			
 		end
 	else
+		logSurvivorStatus("Weapon is not ready")
 		local pwep = self.player:getPrimaryHandItem()
 		local pwepContainer = pwep:getContainer()
-		if(pwepContainer) then pwepContainer:Remove(pwep) end -- remove temporarily so FindAndReturn("weapon") does not find this ammoless gun
+		
+		if(pwepContainer) then 
+			pwepContainer:Remove(pwep) 
+		end -- remove temporarily so FindAndReturn("weapon") does not find this ammoless gun
 		
 		self:Speak(getSpeech("OutOfAmmo"));
 		
-		for i=1, #self.AmmoBoxTypes do
-			self:getTaskManager():AddToTop(FindThisTask:new(self,self.AmmoBoxTypes[i],"Type",1))
-		end
 		for i=1, #self.AmmoTypes do
 			self:getTaskManager():AddToTop(FindThisTask:new(self,self.AmmoTypes[i],"Type",20))
 		end	
+		for i=1, #self.AmmoBoxTypes do
+			self:getTaskManager():AddToTop(FindThisTask:new(self,self.AmmoBoxTypes[i],"Type",1))
+		end
 		self:setNeedAmmo(true)	
 	
 		local mele = self:FindAndReturn(self.player:getModData().weaponmele);
 		if(mele) then 
+			logSurvivorStatus("getting a meele weapon")
 			self.player:setPrimaryHandItem(mele) 
-			if(mele:isRequiresEquippedBothHands()) then self.player:setSecondaryHandItem(mele) end
+			if(mele:isRequiresEquippedBothHands()) then 
+				self.player:setSecondaryHandItem(mele) 
+			end
 		else
+			-- TODO: move to a method
 			local bwep = self.player:getInventory():getBestWeapon();
 			if(bwep) and (bwep ~= pwep) then 
+				logSurvivorStatus("getting the best weapon it can found")
 				self.player:setPrimaryHandItem(bwep) ;
-				if(bwep:isRequiresEquippedBothHands()) then self.player:setSecondaryHandItem(bwep) end
+				if(bwep:isRequiresEquippedBothHands()) then 
+					self.player:setSecondaryHandItem(bwep) 
+				end
 			else 
 				bwep = self:getWeapon()
 				if(bwep) then
+					logSurvivorStatus("getting any weapon")
 					self.player:setPrimaryHandItem(bwep) ;
-					if(bwep:isRequiresEquippedBothHands()) then self.player:setSecondaryHandItem(bwep) end
+					if(bwep:isRequiresEquippedBothHands()) then 
+						self.player:setSecondaryHandItem(bwep) 
+					end
 				else
-					
+					logSurvivorStatus("no weapons in the invetory,", "searching for weapons")
 					self.player:setPrimaryHandItem(nil) 
 					self:getTaskManager():AddToTop(FindThisTask:new(self,"Weapon","Category",1))
-				
 				end
 			end
 		end
@@ -2671,9 +2713,8 @@ function SuperSurvivor:Attack(victim)
 		if(pwepContainer) and (not pwepContainer:contains(pwep)) then 
 			pwepContainer:AddItem(pwep) 
 		end -- re add the former wepon that we temp removed
-		
 	end
-
+	logFunction("Attack")
 end
 --- END COMBAT ---
 
@@ -3223,7 +3264,7 @@ end
 --- END DEBUG ---
 
 --- TASKS ---
--- TODO: create task
+-- TODO: create task for this
 function SuperSurvivor:WearThis(ClothingItemName)
  
 	 local ClothingItem
@@ -4383,6 +4424,7 @@ end
 --- It doesnt use "self" variable so it can be moved to other file 
 ---@param square any the square that the survivor will be loaded
 ---@param ID any the ID of the survivor (needs to be inside the savefiles)
+---@return table returns Survivor if the file exists
 function SuperSurvivor:loadPlayer(square, ID)
 	logFunction("loadPlayer")
 	-- load from file if save file exists
@@ -4392,11 +4434,8 @@ function SuperSurvivor:loadPlayer(square, ID)
 		return nil
 	else	
 		local BuddyDesc = SurvivorFactory.CreateSurvivor();
-		--local realplayer = getSpecificPlayer(0);
 		local Buddy = IsoPlayer.new(getWorld():getCell(),BuddyDesc,square:getX(),square:getY(),square:getZ());
-		--IsoPlayer.setInstance(Buddy);
-		--Buddy:update();
-		--IsoPlayer.setInstance(realplayer);
+
 		Buddy:getInventory():emptyIt();
 		local filename = getSaveDir() .. "Survivor"..tostring(ID);
 		Buddy:load(filename);
@@ -4412,8 +4451,6 @@ function SuperSurvivor:loadPlayer(square, ID)
 		logSurvivorSpawn(Buddy)
 		logSurvivorPosition(Buddy)
 
-		--Buddy:dressInRandomOutfit()
-		--Buddy:dressInNamedOutfit(Buddy:getRandomDefaultOutfit())
 		logFunction("loadPlayer")
 
 		return Buddy

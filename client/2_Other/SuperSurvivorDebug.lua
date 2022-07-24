@@ -1,8 +1,10 @@
 local debugConfigs = {
   enabled = true,
-  logUpdates = false,
+  logUpdates = true,
   logStatus = true,
 }
+-- perhaps a level log? 
+
 --- UPDATES ---
 --- logs that happens a lot ---
 
@@ -39,7 +41,6 @@ function logSurvivorSpawn(survivor)
 
     logValue("survivor id",   survivor:getID())
     logValue("survivor name", survivor:getName())
-    logValue("group id",      survivor:getGroupID())
 
     logFunction("spawn survivor")
   end
@@ -69,6 +70,13 @@ function logSurvivorPerks(survivor)
       end
     end
     logFunction("survivor skills")
+  end
+end
+
+function logSurvivorAttack(survivor,victim,damage)
+  if debugConfigs.enabled and debugConfigs.logStatus then
+    log("survivor", survivor:getID(), "hit the survivor", victim:getID())
+    log("survivor", victim:getID() ,"recieved", tostring(damage), "of damage")
   end
 end
 --- END SURVIVOR LOGS  ---
