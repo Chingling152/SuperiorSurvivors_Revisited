@@ -1272,7 +1272,6 @@ function SuperSurvivor:iStopMovement()
 	self.player:NPCSetAttack(false)
 	self.player:NPCSetMelee(false)
 	self.player:NPCSetAiming(false)	
-	self:DebugSay("iStopMovement is about to trigger a StopWalk!")
 end
 
 function SuperSurvivor:StopWalk()
@@ -4156,22 +4155,23 @@ function SuperSurvivor:update()
 		
 		local group = self:getGroup()
 		if(group) then group:checkMember(self:getID()) end
-		self:SaveSurvivor()
-		if(self:Get():getPrimaryHandItem() ~= nil) and (((self:Get():getPrimaryHandItem():getDisplayName()=="Corpse") and (self:getCurrentTask() ~= "Pile Corpses")) or (self:Get():getPrimaryHandItem():isBroken()) ) then
+			self:SaveSurvivor()
+			if(self:Get():getPrimaryHandItem() ~= nil) and (((self:Get():getPrimaryHandItem():getDisplayName()=="Corpse") and (self:getCurrentTask() ~= "Pile Corpses")) or (self:Get():getPrimaryHandItem():isBroken()) ) then
+				ISTimedActionQueue.add(ISDropItemAction:new(self:Get(),self:Get():getPrimaryHandItem(),30))
+				self:Get():setPrimaryHandItem(nil)
+				self:Get():setSecondaryHandItem(nil)
+			end
+			if(self:Get():getPrimaryHandItem() == nil) and (self:getWeapon()) then 
+				self:Get():setPrimaryHandItem(self:getWeapon()) 
+			end
+			self:ManageXP()
 			
-			ISTimedActionQueue.add(ISDropItemAction:new(self:Get(),self:Get():getPrimaryHandItem(),30))
-			self:Get():setPrimaryHandItem(nil)
-			self:Get():setSecondaryHandItem(nil)
-		end
-		if(self:Get():getPrimaryHandItem() == nil) and (self:getWeapon()) then self:Get():setPrimaryHandItem(self:getWeapon()) end
-		
-		self:ManageXP()
-		
-		self.player:getModData().hitByCharacter = false
-		self.player:getModData().semiHostile = false	
-		self.player:getModData().felldown = nil	
-		
-	else self:SaveSurvivorOnMap() end
+			self.player:getModData().hitByCharacter = false
+			self.player:getModData().semiHostile = false	
+			self.player:getModData().felldown = nil	
+	else 
+		self:SaveSurvivorOnMap() 
+	end
 	
 	if( self.GoFindThisCounter > 0 ) then 
 		self.GoFindThisCounter = self.GoFindThisCounter -1 
@@ -4207,13 +4207,6 @@ end
 
 function SuperSurvivor:OnDeath()
 	print(self:getName() .. " has died")
-
-	-- Cannibal support
-	if not self.player:getBodyDamage():isInfected() then
-		for i=1, ZombRand(1,10) do
-			self.player:getInventory():AddItem("Subpar.StrangeMeat")
-		end
-	end
 
 	local ID = self:getID()
 	SSM:OnDeath(ID)
