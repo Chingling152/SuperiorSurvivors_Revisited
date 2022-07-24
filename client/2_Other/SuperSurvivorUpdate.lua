@@ -143,30 +143,7 @@ function SuperSurvivorPlayerInit(player)
     end
 end
 
-function SuperSurvivorOnDeath(player)
-
-    if (player and player:getModData().ID ~= nil) then
-
-        local SS = SSM:Get(player:getModData().ID)
-        if (SS ~= nil) then
-            SS:OnDeath()
-        end
-    end
-
-end
-function SuperSurvivorGlobalUpdate(player)
-
-    if (player and player:getModData().ID ~= nil) then
-
-        local SS = SSM:Get(player:getModData().ID)
-        if (SS ~= nil) then
-            SS:PlayerUpdate()
-        end
-    end
-
-end
-
-function getGunShotWoundBP(player)
+local function getGunShotWoundBP(player)
 
     if (not instanceof(player, "IsoPlayer")) then
         -- print("not a player object was given to getGunshotwoundBP")
@@ -197,7 +174,7 @@ function getGunShotWoundBP(player)
 
 end
 
-function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
+local function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
     -- print("weaponhitcharacter")
     logFunction("SuperSurvivorPVPHandle")
 		
@@ -480,5 +457,28 @@ function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
     logFunction("SuperSurvivorPVPHandle")
 end
 Events.OnWeaponHitCharacter.Add(SuperSurvivorPVPHandle);
+
+local function SuperSurvivorGlobalUpdate(player)
+
+    if (player and player:getModData().ID ~= nil) then
+
+        local SS = SSM:Get(player:getModData().ID)
+        if (SS ~= nil) then
+            SS:PlayerUpdate()
+        end
+    end
+
+end
 Events.OnPlayerUpdate.Add(SuperSurvivorGlobalUpdate);
+
+local function SuperSurvivorOnDeath(player)
+    if (player and player:getModData().ID ~= nil) then
+
+        local SS = SSM:Get(player:getModData().ID)
+        if (SS ~= nil) then
+            SS:OnDeath()
+        end
+    end
+
+end
 Events.OnCharacterDeath.Add(SuperSurvivorOnDeath);
