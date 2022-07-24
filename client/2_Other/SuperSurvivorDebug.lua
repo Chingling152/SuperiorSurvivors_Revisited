@@ -1,8 +1,10 @@
 local debugConfigs = {
   enabled = true,
-  logUpdates = true,
+  logUpdates = false,
   logStatus = true,
 }
+--- UPDATES ---
+--- logs that happens a lot ---
 
 function logUpdates(...)
   if debugConfigs.enabled and debugConfigs.logUpdates then
@@ -21,21 +23,30 @@ function logValuesUpdates(label,value)
     logValue(label,value)
   end
 end
+--- END UPDATES ---
+
+--- SURVIVOR LOGS  ---
+
+function logSurvivorStatus(...)
+  if debugConfigs.enabled and debugConfigs.logStatus then
+    log(...)
+  end
+end
 
 function logSurvivorSpawn(survivor)
-  if debugConfigs.enabled then
+  if debugConfigs.enabled and debugConfigs.logStatus then
     logFunction("spawn survivor")
 
-    logValue("survivor id",   self:getID())
-    logValue("survivor name", self:getName())
-    logValue("group id",      self:getGroupID())
+    logValue("survivor id",   survivor:getID())
+    logValue("survivor name", survivor:getName())
+    logValue("group id",      survivor:getGroupID())
 
     logFunction("spawn survivor")
   end
 end
 
 function logSurvivorPosition(survivor)
-  if debugConfigs.enabled then
+  if debugConfigs.enabled and debugConfigs.logStatus then
     logFunction("survivor position")
 
     local square = survivor:getCurrentSquare()
@@ -48,7 +59,7 @@ function logSurvivorPosition(survivor)
 end
 
 function logSurvivorPerks(survivor)
-  if debugConfigs.enabled then
+  if debugConfigs.enabled and debugConfigs.logStatus then
     logFunction("survivor skills")
     for i = 1, #SurvivorPerks, 1 do
       local aperk = Perks.FromString(SurvivorPerks[i])
@@ -60,3 +71,4 @@ function logSurvivorPerks(survivor)
     logFunction("survivor skills")
   end
 end
+--- END SURVIVOR LOGS  ---

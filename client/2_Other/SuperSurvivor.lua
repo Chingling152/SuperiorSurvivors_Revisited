@@ -395,7 +395,19 @@ function SuperSurvivor:spawnPlayer(square, isFemale)
 	end
 	nameToSet = namePrefix .. nameToSet .. namePrefixAfter
 	
-	Buddy:setName(nameToSet);
+	Buddy:setForname(nameToSet);
+	Buddy:setDisplayName(nameToSet);
+	
+	Buddy:getStats():setHunger((ZombRand(10)/100))
+	Buddy:getStats():setThirst((ZombRand(10)/100))
+	
+	Buddy:getModData().Name = nameToSet
+	Buddy:getModData().NameRaw = nameToSet
+	
+	local desc = Buddy:getDescriptor()
+	desc:setForename(nameToSet)
+	desc:setSurname("")
+
 	logValue("survivor name", nameToSet)
 
 	logFunction("spawnPlayer")
@@ -410,17 +422,6 @@ function SuperSurvivor:resetAllTables()
 	self.SquaresExplored = {}
 	self.resetWalkToAttempts()
 	self.resetContainerSquaresLooted()
-end
-
-function SuperSurvivor:resetContainerSquaresLooted()
-	for i=1, #LootTypes do 
-		self.SquareContainerSquareLooteds[LootTypes[i]] = {} 
-	end
-	self.SquareContainerSquareLooteds = {}
-end
-
-function SuperSurvivor:resetWalkToAttempts()
-	self.SquareWalkToAttempts = {}
 end
 --- END RESET ---
 
@@ -1166,6 +1167,9 @@ function SuperSurvivor:getWalkToAttempt(sq)
 	end
 	return 0
 end
+function SuperSurvivor:resetWalkToAttempts()
+	self.SquareWalkToAttempts = {}
+end
 
 function SuperSurvivor:isWalking()
 	
@@ -1394,76 +1398,13 @@ function SuperSurvivor:ManageIndoorStuck()
 	end
 
 end
---- END MOVEMENT ---
-
---- INVENTORY ---
-function SuperSurvivor:getBag()
-
-	local backItem = self.player:getClothingItem_Back()
-	if(backItem ~= nil) and (instanceof(backItem,"InventoryContainer")) then 
-		return backItem:getItemContainer() 
-	end
-
-	local secondaryItem = self.player:getSecondaryHandItem()
-	if(secondaryItem ~= nil) and (instanceof(secondaryItem,"InventoryContainer")) then 
-		return secondaryItem:getItemContainer() 
-	end
-
-	local primaryItem = self.player:getPrimaryHandItem()
-	if(primaryItem ~= nil) and (instanceof(primaryItem,"InventoryContainer")) then 
-		return seprimaryItem:getItemContainer() 
-	end
-	
-	return self.player:getInventory()
-end
-
-function SuperSurvivor:getWeapon()
-
-	local inventory = self.player:getInventory()
-	if(inventory ~= nil) and (inventory:FindAndReturnCategory("Weapon")) then 
-		return inventory:FindAndReturnCategory("Weapon") 
-	end
-	
-	local back = self.player:getClothingItem_Back()
-	if(back ~= nil) and (instanceof(back,"InventoryContainer")) and (back:getItemContainer():FindAndReturnCategory("Weapon")) then 
-		return back:getItemContainer():FindAndReturnCategory("Weapon") 
-	end
-	local secondary = self.player:getSecondaryHandItem()
-	if(secondary ~= nil) and (instanceof(secondary,"InventoryContainer")) and (secondary:getItemContainer():FindAndReturnCategory("Weapon")) then 
-		return secondary:getItemContainer():FindAndReturnCategory("Weapon") 
-	end
-	
-	return nil
-end
-
-function SuperSurvivor:hasRoomInBag()
-	local playerBag = self:getBag()
-	
-	if(playerBag:getCapacityWeight() >= (playerBag:getMaxWeight() * 0.9)) then 
-		return false
-	else 
-		return true 
-	end
-end
-
-function SuperSurvivor:hasRoomInBagFor(item)
-
-	local playerBag = self:getBag()
-	
-	if(playerBag:getCapacityWeight() + item:getWeight() >= (playerBag:getMaxWeight() * 0.9)) then 
-		return false
-	else 
-		return true 
-	end
-	
-end
 
 -- This function watches over if they're too close to a target or the main player and forces walk if they are.
 -- That way they don't trip over each other (and more importantly the main player)
 -- This function is used mainly in the combat related tasks, but could be used elsewhere if the npc is running over the main player often.
 -- 6/21/2022: If I set 'setruning' to true , then else false? NPCs will run into each other! But if it looks like what it is now, it works fine!
--- 		This literally implies it will check top to bottom priority. I'm writing this to remind myself for the future.
---	instanceof(self.player:getCell():getObjectList(),"IsoPlayer") < - hold this for now 
+-- This literally implies it will check top to bottom priority. I'm writing this to remind myself for the future.
+-- instanceof(self.player:getCell():getObjectList(),"IsoPlayer") < - hold this for now 
 function SuperSurvivor:NPC_ShouldRunOrWalk()
 
 	if (self.LastEnemeySeen ~= nil) then
@@ -1474,26 +1415,24 @@ function SuperSurvivor:NPC_ShouldRunOrWalk()
 		
 		if(self:Task_IsFleeOrFleeFromSpot()) or (distanceAlt <= 1) or (distance and self:Task_IsAttack()) or (distance and self:Task_IsThreaten() or (distance and self:Task_IsPursue()) ) then
 			self:setRunning(false)
-			self:NPCDebugPrint("NPC_ShouldRunOrWalk set running to false due to distance and Task_IsNotFleeOrFleeFromSpot returned true SRW_0001")
+			self:NPCDebugPrint("NPC_ShouldRunOrWalk set running to false due to distance and Task_IsFleeOrFleeFromSpot returned true SRW_0001")
 		else
 			self:setRunning(true)
-			self:NPCDebugPrint("NPC_ShouldRunOrWalk set running to true due to not distance and Task_IsNotFleeOrFleeFromSpot returned false SRW_0002")
+			self:NPCDebugPrint("NPC_ShouldRunOrWalk set running to true due to not distance and Task_IsFleeOrFleeFromSpot returned false SRW_0002")
 		end
 	else
 		self:NPCDebugPrint("LastEnemySeen returned Nil so, setting NPC to run Reference Number SRW_0003")
 		self:setRunning(false)
 	end
-	
-	
 end
+
 function SuperSurvivor:NPC_EnforceWalkNearMainPlayer()
-	
 	-- Emergency failsafe to prevent NPCs from running into player
 	if (getDistanceBetween(self.player,getSpecificPlayer(0)) < 1) then
 		self:setRunning(false)
 	end
-
 end
+
 -- ERW stands for 'EnforceRunWalk'
 function SuperSurvivor:NPC_ERW_AroundMainPlayer(VarDist)
 
@@ -1581,6 +1520,69 @@ function SuperSurvivor:NPC_MovementManagement()
 		end
 		
 	end
+end
+--- END MOVEMENT ---
+
+--- INVENTORY ---
+function SuperSurvivor:getBag()
+
+	local backItem = self.player:getClothingItem_Back()
+	if(backItem ~= nil) and (instanceof(backItem,"InventoryContainer")) then 
+		return backItem:getItemContainer() 
+	end
+
+	local secondaryItem = self.player:getSecondaryHandItem()
+	if(secondaryItem ~= nil) and (instanceof(secondaryItem,"InventoryContainer")) then 
+		return secondaryItem:getItemContainer() 
+	end
+
+	local primaryItem = self.player:getPrimaryHandItem()
+	if(primaryItem ~= nil) and (instanceof(primaryItem,"InventoryContainer")) then 
+		return seprimaryItem:getItemContainer() 
+	end
+	
+	return self.player:getInventory()
+end
+
+function SuperSurvivor:getWeapon()
+
+	local inventory = self.player:getInventory()
+	if(inventory ~= nil) and (inventory:FindAndReturnCategory("Weapon")) then 
+		return inventory:FindAndReturnCategory("Weapon") 
+	end
+	
+	local back = self.player:getClothingItem_Back()
+	if(back ~= nil) and (instanceof(back,"InventoryContainer")) and (back:getItemContainer():FindAndReturnCategory("Weapon")) then 
+		return back:getItemContainer():FindAndReturnCategory("Weapon") 
+	end
+	local secondary = self.player:getSecondaryHandItem()
+	if(secondary ~= nil) and (instanceof(secondary,"InventoryContainer")) and (secondary:getItemContainer():FindAndReturnCategory("Weapon")) then 
+		return secondary:getItemContainer():FindAndReturnCategory("Weapon") 
+	end
+	
+	return nil
+end
+
+function SuperSurvivor:hasRoomInBag()
+	local playerBag = self:getBag()
+	
+	if(playerBag:getCapacityWeight() >= (playerBag:getMaxWeight() * 0.9)) then 
+		return false
+	else 
+		return true 
+	end
+end
+
+function SuperSurvivor:hasRoomInBagFor(item)
+
+	local playerBag = self:getBag()
+	
+	if(playerBag:getCapacityWeight() + item:getWeight() >= (playerBag:getMaxWeight() * 0.9)) then 
+		return false
+	else 
+		return true 
+	end
+	
 end
 --- END INVENTORY ---
 
@@ -1798,6 +1800,13 @@ function SuperSurvivor:FindAndReturnCount(thisType)
 			
 	return count
 	
+end
+
+function SuperSurvivor:resetContainerSquaresLooted()
+	for i=1, #LootTypes do 
+		self.SquareContainerSquareLooteds[LootTypes[i]] = {} 
+	end
+	self.SquareContainerSquareLooteds = {}
 end
 --- END LOOTING ---
 
@@ -3350,12 +3359,26 @@ function SuperSurvivor:Task_IsPursue()
 		return false
 	end
 end
+function SuperSurvivor:Task_IsFlee()
+	return self:getTaskManager():getCurrentTask() ~= "Flee"
+end
 -- Test Functions
 function SuperSurvivor:TMI_CTOneVar_IsNot(Var1)
 	if (self:getTaskManager():getCurrentTask() ~= Var1) then
 		return true
 	end
 end
+function SuperSurvivor:Task_IsFleeFromSpot()
+	if (self:getTaskManager():getCurrentTask() ~= "Flee From Spot") then
+		return true
+	end
+end
+function SuperSurvivor:Task_IsFleeOrFleeFromSpot()
+	if (not (self:getTaskManager():getCurrentTask() == "Flee")) and (not (self:getTaskManager():getCurrentTask() == "Flee From Spot")) then
+		return true
+	end
+end
+
 --TODO : Create a IsAnyOf
 -- NPC:TMI_CTFourVars_IsNot("Surender", "Flee", "Flee From Spot", "Clean Inventory")
 function SuperSurvivor:TMI_CTFourVars_IsNot(Var1,Var2,Var3,Var4)
@@ -4242,7 +4265,7 @@ function SuperSurvivor:HasInjury()
 end
 --- END HEALTH ---
 
---- SAVEFILES ---
+--- SAVEFILES --- 
 function SuperSurvivor:getID()
 
 	if(instanceof(self.player,"IsoPlayer")) then return self.player:getModData().ID 
@@ -4253,22 +4276,21 @@ function SuperSurvivor:setID(id)
 	self.player:getModData().ID = id;
 end
 
+--- TODO : move these functions to SuperSurvivorManager
+
+--- deletes everything from the survivor and removes it
 function SuperSurvivor:delete()
 
 	self.player:getInventory():emptyIt();
 	self.player:setPrimaryHandItem(nil);
 	self.player:setSecondaryHandItem(nil);
-	self.player:getModData().ID = 0;
+	self:setID(0)
+
 	local filename = getSaveDir() .. "SurvivorTemp";
 	self.player:save(filename);
 	self.player:removeFromWorld()
 	self.player:removeFromSquare()
-	--self.player:setX(9303);
-	--self.player:setY(5709);
-	--self.player:Despawn();
 	self.player = nil;
-	--self.o = nil;
-	--self.TaskManager = nil
 	
 end
 
@@ -4276,12 +4298,16 @@ function SuperSurvivor:SaveSurvivorOnMap()
 	logFunctionUpdates("SaveSurvivorOnMap")
 
 	if self.player:getModData().RealPlayer == true then 
+		logUpdates("main player not saved")
+		logFunctionUpdates("SaveSurvivorOnMap")
 		return
 	end
 
 	local ID = self.player:getModData().ID;
 	
 	if (ID ~= nil) then
+		logValuesUpdates("survivor id", ID)
+
 		local x = math.floor(self.player:getX())
 		local y = math.floor(self.player:getY())
 		local z = math.floor(self.player:getZ())
@@ -4294,23 +4320,24 @@ function SuperSurvivor:SaveSurvivorOnMap()
 		SurvivorLocX[ID] = x
 		SurvivorLocY[ID] = y
 		SurvivorLocZ[ID] = z
-		
 		if (has_value(SurvivorMap[key],ID) == false) then
 			
 			local removeFailed = false;
 			if(self.player:getModData().LastSquareSaveX ~= nil) then
 				local lastkey = self.player:getModData().LastSquareSaveX .. self.player:getModData().LastSquareSaveY .. self.player:getModData().LastSquareSaveZ
+				logValuesUpdates("removing old position save",lastkey)
 				
-				if(lastkey) and ( SurvivorMap[lastkey] ~= nil ) then
+				if(lastkey) and (SurvivorMap[lastkey] ~= nil) then
 					table.remove(SurvivorMap[lastkey] , ID);
+					logUpdates("old position removed")
 				else 
 					removeFailed = true;
+					logUpdates("old position not removed")
 				end
-
 			end
 			
 			if(removeFailed == false) then
-				--print("saving survivor "..tostring(ID).." to key " .. tostring(key))
+				logValuesUpdates("saving new position",key)
 				table.insert(SurvivorMap[key], ID);			
 				self.player:getModData().LastSquareSaveX = x;
 				self.player:getModData().LastSquareSaveY = y;
@@ -4318,7 +4345,7 @@ function SuperSurvivor:SaveSurvivorOnMap()
 			end
 		end
 	else
-		log("survivor without id")
+		logUpdates("survivor without id")
 	end
 
 	logFunctionUpdates("SaveSurvivorOnMap")
@@ -4337,13 +4364,14 @@ function SuperSurvivor:SaveSurvivor()
 		local filename = getSaveDir() .. "Survivor"..tostring(ID);
 		self.player:save(filename);
 		logValue("saved survivor", ID)
+		
 		if(self.player ~= nil and self.player:isDead() == false ) then
-			log("survivor is not dead")
+			logSurvivorStatus("survivor", ID ,"is alive")
 			self:SaveSurvivorOnMap()		
 		else			
 			local group = self:getGroup()
 			if(group) then 
-				log("survivor is dead")
+				logSurvivorStatus("survivor", ID ,"is dead")
 				group:removeMember(self) 
 			end
 		end
@@ -4392,6 +4420,7 @@ function SuperSurvivor:loadPlayer(square, ID)
 	end
 end
 
+--- respawn the survivor with the same things 
 function SuperSurvivor:reload()
 	logFunction("reload")
 	local cs = self.player:getCurrentSquare()
@@ -4399,9 +4428,10 @@ function SuperSurvivor:reload()
 	logValue("survivor id",id)
 
 	self:delete()
-	self.player = self:spawnPlayer(cs,nil)
 
+	self.player = self:spawnPlayer(cs,nil)
 	self:loadPlayer(cs,id)
+
 	logFunction("reload")
 end
 --- END SAVEFILES ---
