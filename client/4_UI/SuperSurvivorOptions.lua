@@ -182,7 +182,7 @@ end
 	if(SuperSurvivorOptions["RaidersAfterHours"] > 22) then SuperSurvivorOptions["RaidersAfterHours"] = 22 end -- fix legacy bad value
 	if(not SuperSurvivorOptions["RaidersChance"]) then SuperSurvivorOptions["RaidersChance"] = 3 end
 	if(not SuperSurvivorOptions["Option_FollowDistance"]) then SuperSurvivorOptions["Option_FollowDistance"] = 5 end
-	if(not SuperSurvivorOptions["Option_ForcePVP"]) then SuperSurvivorOptions["Option_ForcePVP"] = 0 end
+	if(not SuperSurvivorOptions["Option_ForcePVP"]) then SuperSurvivorOptions["Option_ForcePVP"] = 2 end
 	
 	if(not SuperSurvivorOptions["Option_Panic_Distance"]) then SuperSurvivorOptions["Option_Panic_Distance"] = 21 end
 	
@@ -261,7 +261,7 @@ hotkey options
 ]]
 SSHotKeyOptions = {}
 for i=1,#Orders do
-	SSHotKeyOptions[i] = getContextMenuText("SS_OrderAll") .. " " .. OrderDisplayName[Orders[i]]
+	SSHotKeyOptions[i] = getContextMenuText("OrderAll") .. " " .. OrderDisplayName[Orders[i]]
 end
 for i=1,#Orders do
 	table.insert(SSHotKeyOptions,OrderDisplayName[Orders[i]])
