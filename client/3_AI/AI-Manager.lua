@@ -6,6 +6,7 @@
 -- Functions to Attempt-Clean / Make this file easier to read --
 -- #CleanCode      		                                      --
 -- ---------------------------------------------------------- --
+--TODO: remove "isNot" functions
 
 --- Checks if TaskName the current task of the AiTmi
 ---@param AiTmi (table) Task Manager
@@ -42,18 +43,22 @@ local function AiNpc_Task_Is_AnyOf(AiTmi,tasks)
 	return false
 end
 
+--TODO : move to Utilities
 local function AiNpc_IsTarget_Survivor(NPC)
 	return (instanceof(NPC.LastEnemeySeen,"IsoZombie"))
 end
 
+--TODO : move to Utilities
 local function AiNpc_IsTarget_Zombie(NPC)
 	return (instanceof(NPC.LastEnemeySeen,"IsoPlayer"))
 end
 
+--TODO: move to SuperSurvivor.lua
 local function AiNpc_HaveTooManyInjuries(NPC)
 	return NPC:isTooScaredToFight() and NPC:HasInjury()
 end
 
+--TODO: move to SuperSurvivor.lua
 local function AiNpc_IsInDanger(NPC)
 	local hasWeapon = NPC:hasWeapon() 
 	local enemyIsSurvivor = AiNpc_IsTarget_Survivor(NPC)
@@ -67,6 +72,7 @@ local function AiNpc_IsInDanger(NPC)
 	)
 end
 
+--TODO: move to SuperSurvivor.lua
 local function AiNPC_CanAttack(AiTmi,NPC) 
 	local forbidenTasks = {"Attack","Threaten","First Aide"};
 
