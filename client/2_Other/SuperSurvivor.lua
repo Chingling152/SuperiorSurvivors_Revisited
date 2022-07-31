@@ -1758,7 +1758,6 @@ end
 function SuperSurvivor:MarkBuildingExplored(building)
 	local level = SurvivorDebugEnum.Looting
 	if(not building) then 
-		logSurvivorError(level,"current building does not exist")
 		return 
 	end
 	self:resetBuildingWalkToAttempts(building)
@@ -1797,7 +1796,6 @@ end
 ---@return boolean returns true if the survivor is inside a buidling and was not explored
 function SuperSurvivor:inUnLootedBuilding()
 	if(self.player:isOutside()) then 
-		logSurvivorLog("survivor", tostring(self:getID()), "is not inside of a building")
 		return false 
 	end
 	
