@@ -443,6 +443,8 @@ function SuperSurvivor:isDyingOfThirst()
 	return (self.player:getStats():getThirst() > 0.75) 	
 end
 
+--- get the filth value of the survivor
+---@return number returns the blood + dirty level of the survivor
 function SuperSurvivor:getFilth()
 	local filth = 0.0
 	for i=0, BloodBodyPartType.MAX:index()-1 do
@@ -450,7 +452,7 @@ function SuperSurvivor:getFilth()
 	end
 	
 	local inv = self.player:getInventory()
-	local items = inv:getItems() ;
+	local items = inv:getItems();
 	if(items) then
 		for i=1, items:size()-1 do
 			local item = items:get(i)
@@ -479,6 +481,8 @@ function SuperSurvivor:isDead()
 	return (self.player:isDead()) 	
 end
 
+--- gets food from the survivor inventory or bag
+---@return any returns the best food item found or nil if has nothing inside the survivor inventory
 function SuperSurvivor:getFood()	
 	local inv = self.player:getInventory()
 	local bag = self:getBag()
@@ -491,10 +495,14 @@ function SuperSurvivor:getFood()
 
 	return nil 
 end
+--- checks if the survivor have food in its inventory
+---@return boolean
 function SuperSurvivor:hasFood()	
 	return (self:getFood() ~= nil)
 end
 
+--- gets water from the survivor inventory or bag
+---@return any returns any water item found or nil if has nothing inside the survivor inventory
 function SuperSurvivor:getWater()	
 	local inv = self.player:getInventory()
 	local bag = self:getBag()
@@ -507,20 +515,24 @@ function SuperSurvivor:getWater()
 
 	return nil 
 end
+--- checks if the survivor have water in its inventory
+---@return boolean
 function SuperSurvivor:hasWater()	
 	return (self:getWater() ~= nil)
 end
 
-function SuperSurvivor:DrinkFromObject(waterObject)
-  local playerObj = self.player
+--- triggers the ISTakeWaterAction task
+---@param waterObject any
+---@return void
+function SuperSurvivor:DrinkFromObject(waterObject) -- TODO: move to TaskManager ? maybe?
 	self:Speak(getActionText("Drinking"))
-	if not waterObject:getSquare() or not luautils.walkAdj(playerObj, waterObject:getSquare()) then
+	if not waterObject:getSquare() or not luautils.walkAdj(self.player, waterObject:getSquare()) then
 		return
 	end
 	local waterAvailable = waterObject:getWaterAmount()
-	local waterNeeded = math.min(math.ceil(playerObj:getStats():getThirst() * 10), 10)
+	local waterNeeded = math.min(math.ceil(self.player:getStats():getThirst() * 10), 10)
 	local waterConsumed = math.min(waterNeeded, waterAvailable)
-	ISTimedActionQueue.add(ISTakeWaterAction:new(playerObj, nil, waterConsumed, waterObject, (waterConsumed * 10) + 15));
+	ISTimedActionQueue.add(ISTakeWaterAction:new(self.player, nil, waterConsumed, waterObject, (waterConsumed * 10) + 15));
 end
 --- END BASIC NEEDS ---
 
@@ -1833,7 +1845,7 @@ function SuperSurvivor:AttemptedLootBuilding(building)
 end
 --- Searches for the closests square outside a building by searching in a range of 20 squares
 ---@param thisBuildingSquare any
----@return any returns the closests and outside square or the current square if is out of the range of searching (20)
+---@return any returns the closest and outside square or the current square if is out of the range of searching (20)
 function SuperSurvivor:FindClosestOutsideSquare(thisBuildingSquare)
 
 	if(thisBuildingSquare == nil) then 
