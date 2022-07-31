@@ -614,16 +614,21 @@ function SuperSurvivor:getGroupBraveryBonus()
 	return self.GroupBraveryBonus
 end
 
-function SuperSurvivor:isInGroup(thisGuy)
+function SuperSurvivor:isInGroup(thisGuy)--TODO : use a self reference 
 
-	if(self:getGroupID() == nil) then return false
-	elseif(thisGuy:getModData().Group == nil) then return false
-	elseif (thisGuy:getModData().Group == self:getGroupID()) then return true
-	else return false end
+	if(self:getGroupID() == nil) then 
+		return false
+	elseif(thisGuy:getModData().Group == nil) then 
+		return false
+	elseif (thisGuy:getModData().Group == self:getGroupID()) then 
+		return true
+	else 
+		return false 
+	end
 
 end
 
-function SuperSurvivor:isGroupless(thisGuy)
+function SuperSurvivor:isGroupless(thisGuy)--TODO : use a self reference 
 
 	if(thisGuy:getModData().Group == nil) then 
 		return false
@@ -687,8 +692,9 @@ end
 
 function SuperSurvivor:renderName()
 
-
-		if (not self.userName) or ((not self.JustSpoke) and ((not self:isInCell()) or (self:Get():getAlpha() ~= 1.0) or getSpecificPlayer(0)==nil or (not getSpecificPlayer(0):CanSee(self.player)))) then return false end
+		if (not self.userName) or ((not self.JustSpoke) and ((not self:isInCell()) or (self:Get():getAlpha() ~= 1.0) or getSpecificPlayer(0)==nil or (not getSpecificPlayer(0):CanSee(self.player)))) then 
+			return false 
+		end
 		
 		if(self.JustSpoke == true) and (self.TicksSinceSpoke == 0) then
 			self.TicksSinceSpoke = 250	
@@ -1593,6 +1599,30 @@ function SuperSurvivor:hasRoomInBagFor(item)
 	end
 	
 end
+
+--- Returns the amount of an item of type that the survivor holds
+---@param thisType lootType
+---@return integer The amount of an item inside the survivors inventory and bag
+function SuperSurvivor:FindAndReturnCount(thisType)
+	if(thisType == nil) then 
+		return 0 
+	end
+	
+	local count = 0
+	count = count + self.player:getInventory():getItemsFromType(thisType):size()
+
+	local secondary = self.player:getSecondaryHandItem()
+	if(secondary ~= nil) and (secondary:getCategory() == "Container") then 
+		count = count + secondary:getItemContainer():getItemsFromType(thisType):size() 
+	end
+
+	local back = self.player:getClothingItem_Back()
+	if(back ~= nil) then 
+		count = count + back:getItemContainer():getItemsFromType(thisType):size() 
+	end
+			
+	return count
+end
 --- END INVENTORY ---
 
 --- LOOTING ---
@@ -1613,6 +1643,7 @@ function SuperSurvivor:getNoFoodNearBy()
 	if (self.NoFoodNear == true) then
 		if (self.TicksAtLastDetectNoFood ~= nil)and ((self.Reducer - self.TicksAtLastDetectNoFood) > 12000)then 
 			self.NoFoodNear = false 
+			logSurvivorLog(SurvivorDebugEnum.Looting, "no food nearby survivor", tostring(self:getID()))
 		end
 	end
 	return self.NoFoodNear
@@ -1638,6 +1669,7 @@ function SuperSurvivor:getNoWaterNearBy()
 				((self.Reducer - self.TicksAtLastDetectNoWater) > 12900)
 			) then 
 				self.NoWaterNear = false 
+				logSurvivorLog(SurvivorDebugEnum.Looting, "no water nearby survivor", tostring(self:getID()))
 			end
 	end
 	return self.NoWaterNear
@@ -1682,7 +1714,7 @@ end
 ---@param category lootType the name of the selected category
 ---@return integer the amount of items of the selected category
 function SuperSurvivor:getContainerSquareLooted(sq,category)	
-	local level = SurvivorDebugEnum.Update
+	local level = SurvivorDebugEnum.Looting
 	logSurvivorFunction(level, "getContainerSquareLooted")
 	logSurvivorValues(level, "category", category)
 
@@ -1724,7 +1756,9 @@ end
 ---@param building any
 ---@return void
 function SuperSurvivor:MarkBuildingExplored(building)
+	local level = SurvivorDebugEnum.Looting
 	if(not building) then 
+		logSurvivorError(level,"current building does not exist")
 		return 
 	end
 	self:resetBuildingWalkToAttempts(building)
@@ -1763,6 +1797,7 @@ end
 ---@return boolean returns true if the survivor is inside a buidling and was not explored
 function SuperSurvivor:inUnLootedBuilding()
 	if(self.player:isOutside()) then 
+		logSurvivorLog("survivor", tostring(self:getID()), "is not inside of a building")
 		return false 
 	end
 	
@@ -1782,7 +1817,7 @@ end
 ---@param building any
 ---@return boolean returns true if the 
 function SuperSurvivor:AttemptedLootBuilding(building)
-	if( not building ) then 
+	if(not building) then 
 		return false 
 	end
 		
@@ -1849,29 +1884,6 @@ function SuperSurvivor:FindClosestOutsideSquare(thisBuildingSquare)
 	end
 
 	return thisBuildingSquare
-end
---- Returns the amount of an item of type that the survivor holds
----@param thisType lootType
----@return integer The amount of an item inside the survivors inventory and bag
-function SuperSurvivor:FindAndReturnCount(thisType)
-	if(thisType == nil) then 
-		return 0 
-	end
-	
-	local count = 0
-	count = count + self.player:getInventory():getItemsFromType(thisType):size()
-
-	local secondary = self.player:getSecondaryHandItem()
-	if(secondary ~= nil) and (secondary:getCategory() == "Container") then 
-		count = count + secondary:getItemContainer():getItemsFromType(thisType):size() 
-	end
-
-	local back = self.player:getClothingItem_Back()
-	if(back ~= nil) then 
-		count = count + back:getItemContainer():getItemsFromType(thisType):size() 
-	end
-			
-	return count
 end
 
 --- resets the looted squares  
@@ -3089,11 +3101,16 @@ end
 
 --- RELATIONSHIP ---
 function SuperSurvivor:getRelationshipWP()
-	if(self.player:getModData().RWP == nil) then return 0
-	else return self.player:getModData().RWP end	
+	if(self.player:getModData().RWP == nil) then 
+		return 0
+	else 
+		return self.player:getModData().RWP 
+	end	
 end
 function SuperSurvivor:PlusRelationshipWP(thisAmount)
-	if(self.player:getModData().RWP == nil) then self.player:getModData().RWP = 0 end
+	if(self.player:getModData().RWP == nil) then 
+		self.player:getModData().RWP = 0 
+	end
 	
 	self.player:getModData().RWP = self.player:getModData().RWP + thisAmount
 	return self.player:getModData().RWP

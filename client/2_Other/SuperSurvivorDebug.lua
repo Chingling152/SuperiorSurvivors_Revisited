@@ -1,6 +1,6 @@
 local SurvivorDebugConfigs = {
   EnabledLogs = {
-    1,2,3,4
+    5
   }
 }
 
@@ -9,7 +9,8 @@ local SurvivorDebugConfigs = {
 ---|"2" Update Logs
 ---|"3" Combat Logs
 ---|"4" Status Logs
----|"5" Other Logs
+---|"5" Looting Logs
+---|"6" Other Logs
 
 ---@alias DebugLogEnum integer
 ---|"1" Default Log
@@ -24,7 +25,8 @@ SurvivorDebugEnum = {
   Update = 2,
   Combat = 3,
   Status = 4,
-  Other = 5,
+  Looting = 5,
+  Other = 6,
   Obsolete = -1,
 }
 
