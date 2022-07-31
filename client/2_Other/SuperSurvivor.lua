@@ -8,7 +8,7 @@ SurvivorVisionCone = 0.90
 
 --- SPAWN ---
 function SuperSurvivor:new(isFemale,square)
-	
+	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"new")
 	local o = {}	
 	setmetatable(o, self)
 	self.__index = self
@@ -70,15 +70,11 @@ function SuperSurvivor:new(isFemale,square)
 	
 	o.PathingCounter = 0
 	o.GoFindThisCounter = 0
-
-	--TODO : use resetAllTables()
 	o.SpokeToRecently = {}
 	o.SquareWalkToAttempts = {}
 	o.SquaresExplored = {}
 	o.SquareContainerSquareLooteds = {}
-	for i=1, #LootTypes do 
-		o.SquareContainerSquareLooteds[LootTypes[i]] = {} 
-	end
+	for i=1, #LootTypes do o.SquareContainerSquareLooteds[LootTypes[i]] = {} end
 	
 	o:setBravePoints(SuperSurvivorBravery)
 	local Dress = "RandomBasic"
@@ -131,10 +127,12 @@ function SuperSurvivor:new(isFemale,square)
 		
 	o:SuitUp(Dress)
 	
+	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"new")
 	return o
 end
 
 function SuperSurvivor:newLoad(ID,square)
+	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"newLoad")
 	
 	local o = {}	
 	setmetatable(o, self)
@@ -201,16 +199,16 @@ function SuperSurvivor:newLoad(ID,square)
 	o.SquareWalkToAttempts = {}
 	o.SquaresExplored = {}
 	o.SquareContainerSquareLooteds = {}
-	for i=1, #LootTypes do 
-		o.SquareContainerSquareLooteds[LootTypes[i]] = {} 
-	end
+	for i=1, #LootTypes do o.SquareContainerSquareLooteds[LootTypes[i]] = {} end
 
 	o:setBravePoints(SuperSurvivorBravery)
 	
+	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"newLoad")
 	return o
 end
 
 function SuperSurvivor:newSet(player)
+	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"newSet")
 	
 	local o = {}	
 	setmetatable(o, self)
@@ -266,17 +264,16 @@ function SuperSurvivor:newSet(player)
 	o.SquaresExplored = {}
 	o.SpokeToRecently = {}
 	o.SquareContainerSquareLooteds = {}
-	for i=1, #LootTypes do 
-		o.SquareContainerSquareLooteds[LootTypes[i]] = {} 
-	end
+	for i=1, #LootTypes do o.SquareContainerSquareLooteds[LootTypes[i]] = {} end
 	
 	o:setBravePoints(SuperSurvivorBravery)
 	
+	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"newSet")
 	return o
 end
 
 function SuperSurvivor:spawnPlayer(square, isFemale)
-	logFunction("spawnPlayer")
+	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"spawnPlayer")
 	local BuddyDesc
 	if(isFemale == nil) then
 		BuddyDesc = SurvivorFactory.CreateSurvivor();
@@ -408,9 +405,9 @@ function SuperSurvivor:spawnPlayer(square, isFemale)
 	desc:setForename(nameToSet)
 	desc:setSurname("")
 
-	logValue("survivor name", nameToSet)
+	logSurvivorValues(SurvivorDebugEnum.Spawn ,"survivor name", nameToSet)
 
-	logFunction("spawnPlayer")
+	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"spawnPlayer")
 	return Buddy
 
 end
@@ -1628,26 +1625,45 @@ function SuperSurvivor:setNoWaterNearBy(toThis)
 	self.NoWaterNear = toThis
 end
 
-function SuperSurvivor:ContainerSquareLooted(sq,Category)
+function SuperSurvivor:ContainerSquareLooted(sq,Category)-- this is just used on lootTask
 	if(sq) then
 		local key = sq:getX()..sq:getY()
-		if(self.SquareContainerSquareLooteds[Category][key] == nil) then self.SquareContainerSquareLooteds[Category][key] = 1
-		else self.SquareContainerSquareLooteds[Category][key] = self.SquareContainerSquareLooteds[Category][key] + 1 end
+		if(self.SquareContainerSquareLooteds[Category][key] == nil) then 
+			self.SquareContainerSquareLooteds[Category][key] = 1
+		else 
+			self.SquareContainerSquareLooteds[Category][key] = self.SquareContainerSquareLooteds[Category][key] + 1 
+		end
 	end
 end
-function SuperSurvivor:setContainerSquareLooted(sq,toThis,Category)
+
+function SuperSurvivor:setContainerSquareLooted(sq,toThis,category)
 	if(sq) then
 		local key = sq:getX()..sq:getY()
-		 self.SquareContainerSquareLooteds[Category][key] = toThis
-		
+		self.SquareContainerSquareLooteds[category][key] = toThis
 	end
 end
-function SuperSurvivor:getContainerSquareLooted(sq,Category)	
+--- Gets the amount of items of a category in a square 
+---@param sq any square to be searched
+---@param category lootType the name of the selected category
+---@return integer the amount of items of the selected category
+function SuperSurvivor:getContainerSquareLooted(sq,category)	
+	local level = SurvivorDebugEnum.Update
+	logSurvivorFunction(level, "getContainerSquareLooted")
+	logSurvivorValues(level, "category", category)
+
 	if(sq) then
 		local key = sq:getX()..sq:getY()
-		if(self.SquareContainerSquareLooteds[Category][key] == nil) then return 0
-		else return self.SquareContainerSquareLooteds[Category][key] end
+		logSurvivorValues(level, "key", key)
+
+		if(self.SquareContainerSquareLooteds[category][key] == nil) then 
+			return 0
+		else 
+			return self.SquareContainerSquareLooteds[category][key] 
+		end
 	end
+	
+	logSurvivorLog(level, "empty square")
+	logSurvivorFunction(level,"getContainerSquareLooted")
 	return 0
 end
 -- New function: To allow the exact position of the NPC to mark spot. This could be useful for preventing NPCs from walking to blocked off doors they witnessed
@@ -1798,14 +1814,11 @@ function SuperSurvivor:FindAndReturnCount(thisType)
 	end
 			
 	return count
-	
 end
 
 function SuperSurvivor:resetContainerSquaresLooted()
-	for i=1, #LootTypes do 
-		self.SquareContainerSquareLooteds[LootTypes[i]] = {} 
-	end
 	self.SquareContainerSquareLooteds = {}
+	for i=1, #LootTypes do self.SquareContainerSquareLooteds[LootTypes[i]] = {} end
 end
 --- END LOOTING ---
 
@@ -2174,24 +2187,7 @@ function SuperSurvivor:needToReload()
 	end	
 end
 function SuperSurvivor:isReloading()
-	
-	--print(self:getName().." isReloading = ");
-    --local queue = ISTimedActionQueue.queues[self.player]
-    --if queue == nil then return false end
-    --for k,v in ipairs(queue.queue) do
-		--print("v:"..tostring(v))
-		--print("k:"..tostring(k))
-		--if(ISReloadWeaponAction == )
-		--if(v.canRack ~= nil)  then --  this current is a reloading TA
-		--	print("is reloading")
-		--	return true
-		--end
-		--v:lol()
-        --if v then return true end
-    --end
-	--print(self:getName().." isReloading end");
-	return self.player:getVariableBoolean("isLoading")
-		
+		return self.player:getVariableBoolean("isLoading")	
 end
 function SuperSurvivor:giveWeapon(weaponType,equipIt )
 	if ((weaponType == "AssaultRifle") or (weaponType == "AssaultRifle2"))  then -- TODO : remove it 
@@ -2297,9 +2293,9 @@ function SuperSurvivor:WeaponReady()
 		end
 		
 	end
-	
 	return true
 end
+
 function SuperSurvivor:openBoxForGun()
 	local index = 0
 	local ammoBox = nil
@@ -2573,36 +2569,38 @@ end
 --- This is the old variant of the attack function. It should not be used for melee attacks. It works well with guns though, so...
 ---@param victim any  
 function SuperSurvivor:Attack(victim)
-	logFunction("Attack")
+	local level = SurvivorDebugEnum.Combat;
+	logSurvivorFunction(level,"Attack")
 
 	if(self.player == nil) then
-		logSurvivorStatus("survivor", self:getID() ,"can't attack", "reason : no player")
-		logFunction("Attack")
+		logSurvivorLog(level,"survivor", self:getID() ,"can't attack", "reason : no player")
+		logSurvivorFunction(level,"Attack")
 		return
 	end
 	-- Create the attack cooldown. (once 0, the npc will do the 'attack' then set the time back up by 1, so anti-attack spam method)
 	-- note: don't use self:CanAttackAlt() in this if statement. it's already being done in this function. (Update: It works long as it's set to true)
 	if (not self:Is_AtkTicksZero()) and (self:CanAttackAlt() == true) then
 		self:AtkTicks_Countdown()
-		logSurvivorStatus("survivor", self:getID() ,"can't attack", "reason : cooldown")
-		logFunction("Attack")
+		logSurvivorLog(level,"survivor", self:getID() ,"can't attack", "reason : cooldown")
+		logSurvivorFunction(level,"Attack")
 		return
 	end
 
+	-- cant attack if stunned by an attack
 	if(self.player:getModData().felldown) then 
-		logSurvivorStatus("survivor", self:getID() ,"can't attack", "reason : survivor has fell down")
-		logFunction("Attack")
+		logSurvivorLog(level,"survivor", self:getID() ,"can't attack", "reason : survivor has fell down")
+		logSurvivorFunction(level,"Attack")
 		return 
-	end -- cant attack if stunned by an attack
+	end 
 	
 	if not (instanceof(victim,"IsoPlayer") or instanceof(victim,"IsoZombie")) then 
-		logSurvivorStatus("survivor", self:getID() ,"can't attack", "reason : target is not an enemy")
-		logFunction("Attack")
+		logSurvivorLog(level,"survivor", self:getID() ,"can't attack", "reason : target is not an enemy")
+		logSurvivorFunction(level,"Attack")
 		return 
 	end
 
 	if(self:WeaponReady()) then
-		logSurvivorStatus("Weapon is ready")
+		logSurvivorLog(level,"Weapon is ready")
 
 		if(instanceof(victim,"IsoPlayer") and IsoPlayer.getCoopPVP() == false) then
 			ForcePVPOn = true;
@@ -2631,7 +2629,7 @@ function SuperSurvivor:Attack(victim)
 			if (self.AtkTicks <= 0) then -- First to make sure it's okay to attack
 				if (self:hasGun()) then		
 					if(self.UsingFullAuto) then 
-						logSurvivorStatus("survivor", self:getID() ,"has automatic weapon")
+						logSurvivorLog(level,"survivor", self:getID() ,"has automatic weapon")
 						self.TriggerHeldDown = true 
 					end
 					
@@ -2645,7 +2643,7 @@ function SuperSurvivor:Attack(victim)
 						self.AtkTicks = 1
 					else
 						self:DebugSay("I MISSED THE GUNSHOT!")
-						log("survivor", self:getID() ,"missed the shot against the survivor", victim:getID())
+						logSurvivorLog(level,"survivor", self:getID() ,"missed the shot against the survivor", victim:getID())
 						self.AtkTicks = 1
 					end
 				else
@@ -2655,11 +2653,11 @@ function SuperSurvivor:Attack(victim)
 					self.AtkTicks = 1
 				end
 			else
-				logSurvivorStatus("survivor", self:getID() ,"can't attack", "reason : cooldown (2)") -- TODO : check if this condition is necessary
+				logSurvivorLog(level,"survivor", self:getID() ,"can't attack", "reason : cooldown (2)") -- TODO : check if this condition is necessary
 			end
 		end
 	else
-		logSurvivorStatus("Weapon is not ready")
+		logSurvivorLog(level,"Weapon is not ready")
 		local pwep = self.player:getPrimaryHandItem()
 		local pwepContainer = pwep:getContainer()
 		
@@ -2679,7 +2677,7 @@ function SuperSurvivor:Attack(victim)
 	
 		local mele = self:FindAndReturn(self.player:getModData().weaponmele);
 		if(mele) then 
-			logSurvivorStatus("getting a meele weapon")
+			logSurvivorLog(level,"getting a meele weapon")
 			self.player:setPrimaryHandItem(mele) 
 			if(mele:isRequiresEquippedBothHands()) then 
 				self.player:setSecondaryHandItem(mele) 
@@ -2688,7 +2686,7 @@ function SuperSurvivor:Attack(victim)
 			-- TODO: move to a method
 			local bwep = self.player:getInventory():getBestWeapon();
 			if(bwep) and (bwep ~= pwep) then 
-				logSurvivorStatus("getting the best weapon it can found")
+				logSurvivorLog(level,"getting the best weapon it can found")
 				self.player:setPrimaryHandItem(bwep) ;
 				if(bwep:isRequiresEquippedBothHands()) then 
 					self.player:setSecondaryHandItem(bwep) 
@@ -2696,13 +2694,13 @@ function SuperSurvivor:Attack(victim)
 			else 
 				bwep = self:getWeapon()
 				if(bwep) then
-					logSurvivorStatus("getting any weapon")
+					logSurvivorLog(level,"getting any weapon")
 					self.player:setPrimaryHandItem(bwep) ;
 					if(bwep:isRequiresEquippedBothHands()) then 
 						self.player:setSecondaryHandItem(bwep) 
 					end
 				else
-					logSurvivorStatus("no weapons in the invetory,", "searching for weapons")
+					logSurvivorLog(level,"no weapons in the invetory,", "searching for weapons")
 					self.player:setPrimaryHandItem(nil) 
 					self:getTaskManager():AddToTop(FindThisTask:new(self,"Weapon","Category",1))
 				end
@@ -2713,7 +2711,7 @@ function SuperSurvivor:Attack(victim)
 			pwepContainer:AddItem(pwep) 
 		end -- re add the former wepon that we temp removed
 	end
-	logFunction("Attack")
+	logSurvivorFunction(level,"Attack")
 end
 --- END COMBAT ---
 
@@ -3696,7 +3694,6 @@ function SuperSurvivor:NPC_FleeWhileReadyingGun()
 	return true
 end
 
---TODO: this doesnt belongs here
 function SuperSurvivor:SuitUp(SuitName)
 
 		-- reset
@@ -4329,18 +4326,19 @@ function SuperSurvivor:delete()
 end
 
 function SuperSurvivor:SaveSurvivorOnMap()
-	logFunctionUpdates("SaveSurvivorOnMap")
+	local level = SurvivorDebugEnum.Other
+	logSurvivorFunction(level,"SaveSurvivorOnMap")
 
 	if self.player:getModData().RealPlayer == true then 
-		logUpdates("main player not saved")
-		logFunctionUpdates("SaveSurvivorOnMap")
+		logSurvivorLog(level,"main player not saved")
+		logSurvivorFunction(level,"SaveSurvivorOnMap")
 		return
 	end
 
 	local ID = self.player:getModData().ID;
 	
 	if (ID ~= nil) then
-		logValuesUpdates("survivor id", ID)
+		logSurvivorValues(level,"survivor id", ID)
 
 		local x = math.floor(self.player:getX())
 		local y = math.floor(self.player:getY())
@@ -4359,19 +4357,19 @@ function SuperSurvivor:SaveSurvivorOnMap()
 			local removeFailed = false;
 			if(self.player:getModData().LastSquareSaveX ~= nil) then
 				local lastkey = self.player:getModData().LastSquareSaveX .. self.player:getModData().LastSquareSaveY .. self.player:getModData().LastSquareSaveZ
-				logValuesUpdates("removing old position save",lastkey)
+				logSurvivorLog(level,"removing old position save",lastkey)
 				
 				if(lastkey) and (SurvivorMap[lastkey] ~= nil) then
 					table.remove(SurvivorMap[lastkey] , ID);
-					logUpdates("old position removed")
+					logSurvivorLog(level,"old position removed")
 				else 
 					removeFailed = true;
-					logUpdates("old position not removed")
+					logSurvivorLog(level,"old position not removed")
 				end
 			end
 			
 			if(removeFailed == false) then
-				logValuesUpdates("saving new position",key)
+				logSurvivorLog(level,"saving new position",key)
 				table.insert(SurvivorMap[key], ID);			
 				self.player:getModData().LastSquareSaveX = x;
 				self.player:getModData().LastSquareSaveY = y;
@@ -4379,17 +4377,18 @@ function SuperSurvivor:SaveSurvivorOnMap()
 			end
 		end
 	else
-		logUpdates("survivor without id")
+		logSurvivorLog(level,"survivor without id")
 	end
 
-	logFunctionUpdates("SaveSurvivorOnMap")
+	logSurvivorFunction(level,"SaveSurvivorOnMap")
 end
 
 function SuperSurvivor:SaveSurvivor()
-	logFunction("SaveSurvivor")
+	local level = SurvivorDebugEnum.Other
+	logSurvivorFunction(level,"SaveSurvivor")
 	if self.player:getModData().RealPlayer == true then 
-		log("main player not saved")
-		logFunction("SaveSurvivor")
+		logSurvivorLog(level,"main player not saved")
+		logSurvivorFunction(level,"SaveSurvivor")
 		return 
 	end
 	
@@ -4397,20 +4396,20 @@ function SuperSurvivor:SaveSurvivor()
 	if(ID ~= nil) then
 		local filename = getSaveDir() .. "Survivor"..tostring(ID);
 		self.player:save(filename);
-		logValue("saved survivor", ID)
+		logSurvivorValues(level, "saved survivor", ID)
 		
 		if(self.player ~= nil and self.player:isDead() == false ) then
-			logSurvivorStatus("survivor", ID ,"is alive")
+			logSurvivorLog(level,"survivor", ID ,"is alive")
 			self:SaveSurvivorOnMap()		
 		else			
 			local group = self:getGroup()
 			if(group) then 
-				logSurvivorStatus("survivor", ID ,"is dead")
+				logSurvivorLog(level,"survivor", ID ,"is dead")
 				group:removeMember(self) 
 			end
 		end
-		logFunction("SaveSurvivor")
 	end
+	logSurvivorFunction(level,"SaveSurvivor")
 end
 
 --- loads a survivor 
@@ -4419,11 +4418,12 @@ end
 ---@param ID any the ID of the survivor (needs to be inside the savefiles)
 ---@return table returns Survivor if the file exists
 function SuperSurvivor:loadPlayer(square, ID)
-	logFunction("loadPlayer")
+	local level = SurvivorDebugEnum.Other
+	logSurvivorFunction(level,"loadPlayer")
 	-- load from file if save file exists
 	if(ID == nil) or (not checkSaveFileExists("Survivor"..tostring(ID))) then
-		logError("survivor with id " .. ID .. " not found")
-		logFunction("loadPlayer")
+		logSurvivorError(level,"survivor with id " .. ID .. " not found")
+		logSurvivorFunction(level,"loadPlayer")
 		return nil
 	else	
 		local BuddyDesc = SurvivorFactory.CreateSurvivor();
@@ -4441,28 +4441,29 @@ function SuperSurvivor:loadPlayer(square, ID)
 		Buddy:setBlockMovement(true)
 		Buddy:setSceneCulled(false)
 
-		logSurvivorSpawn(Buddy)
+		logSurvivorSpawnInfo(Buddy)
 		logSurvivorPosition(Buddy)
 
-		logFunction("loadPlayer")
-
+		logSurvivorFunction(level,"loadPlayer")
 		return Buddy
 	end
 end
 
 --- respawn the survivor with the same things 
 function SuperSurvivor:reload()
-	logFunction("reload")
+	local level = SurvivorDebugEnum.Spawn
+
+	logSurvivorFunction(level, "reload")
 	local cs = self.player:getCurrentSquare()
 	local id = self:getID()
-	logValue("survivor id",id)
+	logSurvivorValues(level, "survivor id",id)
 
 	self:delete()
 
 	self.player = self:spawnPlayer(cs,nil)
 	self:loadPlayer(cs,id)
 
-	logFunction("reload")
+		logSurvivorFunction(level, "reload")
 end
 --- END SAVEFILES ---
 

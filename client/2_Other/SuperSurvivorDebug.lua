@@ -1,82 +1,160 @@
-local debugConfigs = {
-  enabled = true,
-  logUpdates = true,
-  logStatus = true,
+local SurvivorDebugConfigs = {
+  EnabledLogs = {
+    1,2,3,4
+  }
 }
--- perhaps a level log? 
 
---- UPDATES ---
---- logs that happens a lot ---
+---@alias SurvivorDebugEnum integer
+---|"1" Spawn Logs
+---|"2" Update Logs
+---|"3" Combat Logs
+---|"4" Status Logs
+---|"5" Other Logs
 
-function logUpdates(...)
-  if debugConfigs.enabled and debugConfigs.logUpdates then
-    log(...)  
+---@alias DebugLogEnum integer
+---|"1" Default Log
+---|"2" Function Log
+---|"3" Label/Value Log
+---|"4" Error Log
+
+
+--- Values for Debug
+SurvivorDebugEnum = {
+  Spawn = 1,
+  Update = 2,
+  Combat = 3,
+  Status = 4,
+  Other = 5,
+  Obsolete = -1,
+}
+
+local DebugLogEnum = {
+  Log = 1,
+  Function = 2,
+  Value = 3,
+  Error = 4
+}
+
+local function canLogThisLevel(level)
+  if (level == -1) or (level <= #SurvivorDebugConfigs)then
+    return false   
+  end
+
+  for _, v in ipairs(SurvivorDebugConfigs.EnabledLogs) do
+    if v == level then
+      return true
+    end
+  end
+
+  return false
+end
+
+--- SURVIVOR GENERIC LOGS  ---
+
+--- Generic log for survivor
+---@param type integer|DebugLogEnum 
+---@param level integer|SurvivorDebugEnum
+local function logSurvivor(type,level,...)
+  if (canLogThisLevel(level)) then
+    if type == DebugLogEnum.Log then
+      log(...)
+    elseif type == DebugLogEnum.Function then
+      logFunction(...)
+    elseif type == DebugLogEnum.Value then
+      local values = {...};
+      if(#values > 1)then
+        logValue(values[1], values[2])
+      end
+    elseif type == DebugLogEnum.Error then
+      logError(...)
+    end
   end
 end
 
-function logFunctionUpdates(text)
-  if debugConfigs.enabled and debugConfigs.logUpdates then
-    logFunction(text)
-  end
+--- Default log for survivor
+--- Any text after the param level will be considered the message 
+---@param level integer|SurvivorDebugEnum The level of the log text
+function logSurvivorLog(level,...)
+  logSurvivor(DebugLogEnum.Log, level,...)
 end
 
-function logValuesUpdates(label,value)
-  if debugConfigs.enabled and debugConfigs.logUpdates then
-    logValue(label,value)
-  end
-end
---- END UPDATES ---
-
---- SURVIVOR LOGS  ---
-
-function logSurvivorStatus(...)
-  if debugConfigs.enabled and debugConfigs.logStatus then
-    log(...)
-  end
+--- Logs the start/end of a function for survivor,
+--- Any text after the param level will be considered the message 
+---@param level integer|SurvivorDebugEnum The level of the log text
+function logSurvivorFunction(level,text)
+  logSurvivor(DebugLogEnum.Function,level,text)
 end
 
-function logSurvivorSpawn(survivor)
-  if debugConfigs.enabled and debugConfigs.logStatus then
-    logFunction("spawn survivor")
+--- Logs a label and value separated by " : "
+--- Any text after the param level will be considered the message 
+---@param level integer|SurvivorDebugEnum The level of the log text
+---@param label string
+---@param value any
+function logSurvivorValues(level,label,value)
+  logSurvivor(DebugLogEnum.Value,level,label,value)
+end
 
-    logValue("survivor id",   survivor:getID())
-    logValue("survivor name", survivor:getName())
+--- Logs an error by throwing an exception (use this method if its really an error)
+--- Any text after the param level will be considered the message 
+---@param level integer|SurvivorDebugEnum The level of the log text
+function logSurvivorError(level,...)
+  logSurvivor(DebugLogEnum.Error,level,...)
+end
+--- END SURVIVOR LOGS  ---
 
-    logFunction("spawn survivor")
+
+--- SURVIVOR SPECIFIC LOGS  ---
+function logSurvivorSpawnInfo(survivor)
+  local level = SurvivorDebugEnum.Spawn
+
+  if (canLogThisLevel(level)) then
+    logSurvivorFunction(level, "spawn survivor")
+
+    logSurvivorLog(level, "survivor id",   survivor:getID())
+    logSurvivorLog(level, "survivor name", survivor:getName())
+
+    logSurvivorFunction(level, "spawn survivor")
   end
 end
 
 function logSurvivorPosition(survivor)
-  if debugConfigs.enabled and debugConfigs.logStatus then
-    logFunction("survivor position")
+  local level = SurvivorDebugEnum.Spawn
+
+  if (canLogThisLevel(level)) then
+    
+    logSurvivorFunction(level, "survivor position")
 
     local square = survivor:getCurrentSquare()
-    logValue("X", square:getX())
-    logValue("X", square:getY())
-    logValue("Z", square:getZ())
+    logSurvivorValues(level, "X", square:getX())
+    logSurvivorValues(level, "X", square:getY())
+    logSurvivorValues(level, "Z", square:getZ())
 
-    logFunction("survivor position")
+    logSurvivorFunction(level,"survivor position")
   end
 end
 
 function logSurvivorPerks(survivor)
-  if debugConfigs.enabled and debugConfigs.logStatus then
-    logFunction("survivor skills")
+  local level = SurvivorDebugEnum.Spawn
+  if (canLogThisLevel(level)) then
+    logSurvivorFunction(level,"survivor skills")
+
     for i = 1, #SurvivorPerks, 1 do
       local aperk = Perks.FromString(SurvivorPerks[i])
       if aperk ~= nil then
         local level = survivor:getPerkLevel(aperk)
-        logValue(aperk:getName(), level)
+        logSurvivorValues(level, aperk:getName(), level)
       end
     end
-    logFunction("survivor skills")
+
+    logSurvivorFunction(level,"survivor skills")
   end
 end
 
 function logSurvivorAttack(survivor,victim,damage)
-  if debugConfigs.enabled and debugConfigs.logStatus then
-    log("survivor", survivor:getID(), "hit the survivor", victim:getID())
-    log("survivor", victim:getID() ,"recieved", tostring(damage), "of damage")
+  local level = SurvivorDebugEnum.Combat
+  if (canLogThisLevel(level)) then
+    logSurvivorLog(level, "survivor", survivor:getID(), "hit the survivor", victim:getID())
+    logSurvivorLog(level, "survivor", victim:getID() ,"recieved", tostring(damage), "of damage")
   end
 end
---- END SURVIVOR LOGS  ---
+--- SURVIVOR SPECIFIC LOGS  ---

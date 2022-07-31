@@ -42,9 +42,9 @@ end
 
 --- method used to throw an exception in debug mode
 --- only use it if you want to break code when something wrong happen
----@param text any
-function logError(text)
+function logError(...)
   if debugConfigs.logErrors then
-    error(text,1)
+    local args = {...}
+    error(table.concat(args, " "),1)
   end
 end

@@ -7,7 +7,20 @@ local function getJobText(text)
 	return getContextMenuText("Job_" .. text)
 end
 
-LootTypes = {"Food","Weapon","Item","Clothing","Container","Literature"};
+--- ALIASES ---
+---@alias lootType string
+---| "Food"
+---| "Weapon"
+---| "Item"
+---| "Clothing"
+---| "Container"
+---| "Literature"
+--- END ALIASES ---
+
+-- all loot type of the game
+LootTypes = {
+	"Food","Weapon","Item","Clothing","Container","Literature"
+};
 
 function SurvivorOrder(test,player,order,orderParam)
 	if(player ~= nil) then
