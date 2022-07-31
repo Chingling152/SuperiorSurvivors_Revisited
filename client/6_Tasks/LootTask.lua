@@ -207,7 +207,7 @@ function LootCategoryTask:update()
 						end
 					else
 						self.parent:DebugSay("ContainerSquareLooted")
-						self.parent:ContainerSquareLooted(self.Container:getSourceGrid(),self.Category)
+						self.parent:addContainerSquareLooted(self.Container:getSourceGrid(),self.Category)
 						self.Container = nil
 					end
 				end

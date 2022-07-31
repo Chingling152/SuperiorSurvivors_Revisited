@@ -1540,6 +1540,19 @@ function SuperSurvivor:getBag()
 	return self.player:getInventory()
 end
 
+function SuperSurvivor:FindAndReturn(thisType)
+	local item = self.player:getInventory():FindAndReturn(thisType);
+	
+	if(not item) and (self.player:getSecondaryHandItem() ~= nil) and (self.player:getSecondaryHandItem():getCategory() == "Container") then 
+		item = self.player:getSecondaryHandItem():getItemContainer():FindAndReturn(thisType); 
+	end
+	if(not item) and (self.player:getClothingItem_Back() ~= nil) then 
+		item = self.player:getClothingItem_Back():getItemContainer():FindAndReturn(thisType); 
+	end
+			
+	return item
+end
+
 function SuperSurvivor:getWeapon()
 
 	local inventory = self.player:getInventory()
@@ -1583,23 +1596,30 @@ end
 --- END INVENTORY ---
 
 --- LOOTING ---
-function SuperSurvivor:BuildingLooted()	
-	self.NumberOfBuildingsLooted = self.NumberOfBuildingsLooted + 1
-end
+
+--- Gets the number of looted buildings
+---@return number the current number of looted buildings
 function SuperSurvivor:getBuildingsLooted()	
 	return self.NumberOfBuildingsLooted
 end
+--- Increases the number of looted buildings by 1
+function SuperSurvivor:BuildingLooted()	
+	self.NumberOfBuildingsLooted = self.NumberOfBuildingsLooted + 1
+end
 
+--- Checks if the survivor checked for food near by
+---@return boolean returns true if there is food near by and last time checked is recent
 function SuperSurvivor:getNoFoodNearBy()
-	--print(self:getName() ..  " nofood " .. tostring((self.Reducer - self.TicksAtLastDetectNoFood)))
 	if (self.NoFoodNear == true) then
 		if (self.TicksAtLastDetectNoFood ~= nil)and ((self.Reducer - self.TicksAtLastDetectNoFood) > 12000)then 
 			self.NoFoodNear = false 
 		end
 	end
-
 	return self.NoFoodNear
 end
+--- Sets that there is or not food near by the survivor
+---@param toThis boolean 
+---@return void
 function SuperSurvivor:setNoFoodNearBy(toThis)
 	if(toThis == true) then
 		self.TicksAtLastDetectNoFood = self.Reducer
@@ -1608,34 +1628,49 @@ function SuperSurvivor:setNoFoodNearBy(toThis)
 	self.NoFoodNear = toThis
 end
 
+--- Checks if the survivor checked for water near by
+---@return boolean returns true if there is water near by and last time checked is recent
 function SuperSurvivor:getNoWaterNearBy()
 	if (self.NoWaterNear == true) then
 		if (self.TicksAtLastDetectNoWater ~= nil)
 			and (
-				(self.Reducer < self.TicksAtLastDetectNoWater)
-				or ((self.Reducer - self.TicksAtLastDetectNoWater) > 12900)
-			) then self.NoWaterNear = false end
+				(self.Reducer < self.TicksAtLastDetectNoWater)or 
+				((self.Reducer - self.TicksAtLastDetectNoWater) > 12900)
+			) then 
+				self.NoWaterNear = false 
+			end
 	end
 	return self.NoWaterNear
 end
+--- Sets that there is or not water near by the survivor
+---@param toThis boolean 
+---@return void
 function SuperSurvivor:setNoWaterNearBy(toThis)
 	if(toThis == true) then
 		self.TicksAtLastDetectNoWater = self.Reducer
 	end
 	self.NoWaterNear = toThis
 end
-
-function SuperSurvivor:ContainerSquareLooted(sq,Category)-- this is just used on lootTask
+--- adds a looted square with a category item
+---@param sq any a square
+---@param Category lootType 
+---@return void
+function SuperSurvivor:addContainerSquareLooted(sq,category)
 	if(sq) then
 		local key = sq:getX()..sq:getY()
-		if(self.SquareContainerSquareLooteds[Category][key] == nil) then 
-			self.SquareContainerSquareLooteds[Category][key] = 1
+		if(self.SquareContainerSquareLooteds[category][key] == nil) then 
+			self.SquareContainerSquareLooteds[category][key] = 1
 		else 
-			self.SquareContainerSquareLooteds[Category][key] = self.SquareContainerSquareLooteds[Category][key] + 1 
+			self.SquareContainerSquareLooteds[category][key] = self.SquareContainerSquareLooteds[category][key] + 1 
 		end
 	end
 end
 
+--- sets a looted square to a value
+---@param sq any
+---@param toThis integer 
+---@param category lootType
+---@return void
 function SuperSurvivor:setContainerSquareLooted(sq,toThis,category)
 	if(sq) then
 		local key = sq:getX()..sq:getY()
@@ -1669,13 +1704,15 @@ end
 -- New function: To allow the exact position of the NPC to mark spot. This could be useful for preventing NPCs from walking to blocked off doors they witnessed
 -- It needs work though, because right now it will more than likely mark off the whole building.
 -- IFOD stands for 'In front of door' but it will also check for barricaded windows too.
+--- TODO : this functions is not being used. Remove it
 function SuperSurvivor:MarkCurrentSquareExplored_IFOD(building)
-	if (not self:inFrontOfLockedDoor()) or (not self:inFrontOfBarricadedWindowAlt()) then return false end
+	if (not self:inFrontOfLockedDoor()) or (not self:inFrontOfBarricadedWindowAlt()) then 
+		return false 
+	end
 	self:resetBuildingWalkToAttempts(building)
 	local bdef = building:getDef()	
 	for x=bdef:getX()-1,(bdef:getX() + bdef:getW()+1) do	
 		for y=bdef:getY()-1,(bdef:getY() + bdef:getH()+1) do
-			
 			local sq = getCell():getGridSquare(x,y,self.player:getZ())			
 			if(sq) then 
 				self:Explore(sq)
@@ -1683,12 +1720,21 @@ function SuperSurvivor:MarkCurrentSquareExplored_IFOD(building)
 		end							
 	end
 end
+--- Marks a building as explored
+---@param building any
+---@return void
 function SuperSurvivor:MarkBuildingExplored(building)
-	if(not building) then return false end
+	if(not building) then 
+		return 
+	end
 	self:resetBuildingWalkToAttempts(building)
 	local bdef = building:getDef()	
-	for x=bdef:getX()-1,(bdef:getX() + bdef:getW()+1) do	
-		for y=bdef:getY()-1,(bdef:getY() + bdef:getH()+1) do
+	
+	local xdef = bdef:getX()
+	local ydef = bdef:getY()
+
+	for x=xdef-1,(xdef + bdef:getW()+1) do	
+		for y=ydef-1,(ydef + bdef:getH()+1) do
 			
 			local sq = getCell():getGridSquare(x,y,self.player:getZ())			
 			if(sq) then 
@@ -1697,8 +1743,13 @@ function SuperSurvivor:MarkBuildingExplored(building)
 		end							
 	end
 end
+--- Checks it the current building was explored
+---@param building any
+---@return boolean returns true if the building was explored
 function SuperSurvivor:getBuildingExplored(building)
-	if self:isTargetBuildingClaimed(building) then return true end
+	if self:isTargetBuildingClaimed(building) then 
+		return true 
+	end
 
 	local sq = getRandomBuildingSquare(building)		
 	if(sq) then 
@@ -1708,9 +1759,13 @@ function SuperSurvivor:getBuildingExplored(building)
 	return false
 end
 
+--- Checks if the current building is unlooted
+---@return boolean returns true if the survivor is inside a buidling and was not explored
 function SuperSurvivor:inUnLootedBuilding()
+	if(self.player:isOutside()) then 
+		return false 
+	end
 	
-	if(self.player:isOutside()) then return false end
 	local sq = self.player:getCurrentSquare()
 
 	if(sq) then
@@ -1723,29 +1778,34 @@ function SuperSurvivor:inUnLootedBuilding()
 	
 	return false
 end
+--- 
+---@param building any
+---@return boolean returns true if the 
 function SuperSurvivor:AttemptedLootBuilding(building)
-	
-	if( not building ) then return false end
+	if( not building ) then 
+		return false 
+	end
 		
 	local buildingSquareRoom = building:getRandomRoom()
-	if not buildingSquareRoom then return false end
-	
-	local buildingSquare = buildingSquareRoom:getRandomFreeSquare()
-	if not buildingSquare then return false end
-
-	if(self:getWalkToAttempt(buildingSquare) == 0) then 
-		return false 	
-	elseif (self:getWalkToAttempt(buildingSquare) >= 8) then 
-		return true 
-	else
-		return false
+	if not buildingSquareRoom then 
+		return false 
 	end
 	
-end
+	local buildingSquare = buildingSquareRoom:getRandomFreeSquare()
+	if not buildingSquare then 
+		return false 
+	end
 
+	return self:getWalkToAttempt(buildingSquare) >= 8;	
+end
+--- Searches for the closests square outside a building by searching in a range of 20 squares
+---@param thisBuildingSquare any
+---@return any returns the closests and outside square or the current square if is out of the range of searching (20)
 function SuperSurvivor:FindClosestOutsideSquare(thisBuildingSquare)
 
-	if(thisBuildingSquare == nil) then return nil end 
+	if(thisBuildingSquare == nil) then 
+		return nil 
+	end 
 	
 	local bx=thisBuildingSquare:getX()
 	local by=thisBuildingSquare:getY()
@@ -1758,43 +1818,41 @@ function SuperSurvivor:FindClosestOutsideSquare(thisBuildingSquare)
 		if(px > bx) then
 			for i=1,20 do
 				local sq = getCell():getGridSquare(bx + i, by, 0)
-				if(sq ~= nil and sq:isOutside()) then return sq end
+				if(sq ~= nil and sq:isOutside()) then 
+					return sq 
+				end
 			end
 		else
 			for i=1,20 do
 				local sq = getCell():getGridSquare(bx - i, by, 0)
-				if(sq ~= nil and sq:isOutside()) then return sq end
+				if(sq ~= nil and sq:isOutside()) then 
+					return sq 
+				end
 			end
 		end
 	else 
 		if(py > by) then
 			for i=1,20 do
 				local sq = getCell():getGridSquare(bx, by + i, 0)
-				if(sq ~= nil and sq:isOutside()) then return sq end
+				if(sq ~= nil and sq:isOutside()) then 
+					return sq 
+				end
 			end
 		else
 			for i=1,20 do
 				local sq = getCell():getGridSquare(bx, by - i, 0)
-				if(sq ~= nil and sq:isOutside()) then return sq end
+				if(sq ~= nil and sq:isOutside()) then 
+					return sq 
+				end
 			end
 		end
 	end
 
 	return thisBuildingSquare
 end
---TODO: this method already exists
-function SuperSurvivor:FindAndReturn(thisType)
-	local item = self.player:getInventory():FindAndReturn(thisType);
-	
-	if(not item) and (self.player:getSecondaryHandItem() ~= nil) and (self.player:getSecondaryHandItem():getCategory() == "Container") then 
-		item = self.player:getSecondaryHandItem():getItemContainer():FindAndReturn(thisType); 
-	end
-	if(not item) and (self.player:getClothingItem_Back() ~= nil) then 
-		item = self.player:getClothingItem_Back():getItemContainer():FindAndReturn(thisType); 
-	end
-			
-	return item
-end
+--- Returns the amount of an item of type that the survivor holds
+---@param thisType lootType
+---@return integer The amount of an item inside the survivors inventory and bag
 function SuperSurvivor:FindAndReturnCount(thisType)
 	if(thisType == nil) then 
 		return 0 
@@ -1816,6 +1874,8 @@ function SuperSurvivor:FindAndReturnCount(thisType)
 	return count
 end
 
+--- resets the looted squares  
+---@return void
 function SuperSurvivor:resetContainerSquaresLooted()
 	self.SquareContainerSquareLooteds = {}
 	for i=1, #LootTypes do self.SquareContainerSquareLooteds[LootTypes[i]] = {} end
