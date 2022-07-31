@@ -443,7 +443,11 @@ function SuperSurvivor:isDyingOfThirst()
 	return (self.player:getStats():getThirst() > 0.75) 	
 end
 
---- get the filth value of the survivor
+function SuperSurvivor:isDead()
+	return (self.player:isDead()) 	
+end
+
+--- Gets the filth value of a survivor
 ---@return number returns the blood + dirty level of the survivor
 function SuperSurvivor:getFilth()
 	local filth = 0.0
@@ -477,11 +481,7 @@ function SuperSurvivor:getFilth()
 	return filth
 end
 
-function SuperSurvivor:isDead()
-	return (self.player:isDead()) 	
-end
-
---- gets food from the survivor inventory or bag
+--- Gets food from a survivor's inventory or bag
 ---@return any returns the best food item found or nil if has nothing inside the survivor inventory
 function SuperSurvivor:getFood()	
 	local inv = self.player:getInventory()
@@ -495,13 +495,13 @@ function SuperSurvivor:getFood()
 
 	return nil 
 end
---- checks if the survivor have food in its inventory
+--- Checks if the survivor has food in its inventory
 ---@return boolean
 function SuperSurvivor:hasFood()	
 	return (self:getFood() ~= nil)
 end
 
---- gets water from the survivor inventory or bag
+--- Gets water from a survivor's inventory or bag
 ---@return any returns any water item found or nil if has nothing inside the survivor inventory
 function SuperSurvivor:getWater()	
 	local inv = self.player:getInventory()
@@ -515,13 +515,13 @@ function SuperSurvivor:getWater()
 
 	return nil 
 end
---- checks if the survivor have water in its inventory
+--- Checks if the survivor has water in its inventory
 ---@return boolean
 function SuperSurvivor:hasWater()	
 	return (self:getWater() ~= nil)
 end
 
---- triggers the ISTakeWaterAction task
+--- Triggers the ISTakeWaterAction task
 ---@param waterObject any
 ---@return void
 function SuperSurvivor:DrinkFromObject(waterObject) -- TODO: move to TaskManager ? maybe?
@@ -585,16 +585,23 @@ end
 --- END BASES ---
 
 --- GROUPS --- 
-function SuperSurvivor:setGroupRole(toValue)
+--- sets the group role of the survivor
+---@param toValue string
+---@return void
+function SuperSurvivor:setGroupRole(toValue) -- todo: Maybe recieve strings like : "Job_Worker" and get it from getJobText()
 	self.player:getModData().GroupRole = toValue
 end
+
+--- gets the group role of the survivor
+---@return string
 function SuperSurvivor:getGroupRole()
 	return self.player:getModData().GroupRole
 end
 
+--- gets the survivor's group id
+---@return any returns the group id or nil if the survivor is groupless
 function SuperSurvivor:getGroup()
 	local gid = self:getGroupID()
-	--print("get group " .. gid)
 	if(gid ~= nil) then 		
 		return SSGM:Get(gid) 
 	end
@@ -608,11 +615,16 @@ function SuperSurvivor:getGroupID()
 	return self.player:getModData().Group
 end
 
+--- gets the bravery bonus of a survivor for being in a group
+--- the amount of bonus is determined by the amount of group member next to the survivor
+--- this function use update ticks
+---@return integer returns the bravery bonus or zero if is groupless
 function SuperSurvivor:getGroupBraveryBonus()
-
 	if(self.GroupBraveryUpdatedTicks % 5 == 0) then
+		if(self:getGroupID() == nil) then 
+			return 0 
+		end
 
-		if(self:getGroupID() == nil) then return 0 end
 		local group = SSGM:Get(self:getGroupID())
 		if(group) then 
 			self.GroupBraveryBonus = group:getMembersThisCloseCount(12, self:Get()) 
@@ -626,8 +638,10 @@ function SuperSurvivor:getGroupBraveryBonus()
 	return self.GroupBraveryBonus
 end
 
-function SuperSurvivor:isInGroup(thisGuy)--TODO : use a self reference 
-
+--- checks if other survivor belongs to the current survivors group
+---@param thisGuy table any survivor
+---@return boolean 
+function SuperSurvivor:isInGroup(thisGuy)--TODO : change name to "isInMyGroup" 
 	if(self:getGroupID() == nil) then 
 		return false
 	elseif(thisGuy:getModData().Group == nil) then 
@@ -637,17 +651,16 @@ function SuperSurvivor:isInGroup(thisGuy)--TODO : use a self reference
 	else 
 		return false 
 	end
-
 end
-
+--- checks if a survivor is groupless 
+---@param thisGuy any
+---@return boolean returns true if the survivor belongs to any group
 function SuperSurvivor:isGroupless(thisGuy)--TODO : use a self reference 
-
 	if(thisGuy:getModData().Group == nil) then 
 		return false
 	else 
 		return true 
 	end
-
 end
 --- ENDGROUPS --- 
 
