@@ -7,16 +7,6 @@ local function getJobText(text)
 	return getContextMenuText("Job_" .. text)
 end
 
---- ALIASES ---
----@alias lootType string
----| "Food"
----| "Weapon"
----| "Item"
----| "Clothing"
----| "Container"
----| "Literature"
---- END ALIASES ---
-
 -- all loot type of the game
 LootTypes = {
 	"Food","Weapon","Item","Clothing","Container","Literature"

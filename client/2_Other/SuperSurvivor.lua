@@ -615,9 +615,9 @@ function SuperSurvivor:getGroupID()
 	return self.player:getModData().Group
 end
 
---- gets the bravery bonus of a survivor for being in a group
+--- gets the bravery bonus of a survivor for being in a group every 5 ticks
 --- the amount of bonus is determined by the amount of group member next to the survivor
---- this function use update ticks
+--- this function uses update ticks (5)
 ---@return integer returns the bravery bonus or zero if is groupless
 function SuperSurvivor:getGroupBraveryBonus()
 	if(self.GroupBraveryUpdatedTicks % 5 == 0) then
@@ -679,25 +679,23 @@ function SuperSurvivor:getCurrentSquare()
 end
 ---  END POSITION ---
 
-function SuperSurvivor:getModData()
-	return self.player:getModData()
-end
-
-function SuperSurvivor:getTaskManager()
-	return self.MyTaskManager	
-end
-
 --- NAME ---
+--- gets the current survivor name
+---@return string
 function SuperSurvivor:getName()
 	return self.player:getModData().Name
 end
-
+--- redraws the current survivor name
+---@return void
 function SuperSurvivor:refreshName()
 	if(self.player:getModData().Name ~= nil) then 
 		self:setName(self.player:getModData().Name) 
 	end
 end
 
+--- sets and display the current survivor name
+---@param nameToSet string
+---@return void
 function SuperSurvivor:setName(nameToSet)
 	
 	local desc = self.player:getDescriptor()
@@ -714,7 +712,8 @@ function SuperSurvivor:setName(nameToSet)
 	self.player:getModData().Name = nameToSet
 	self.player:getModData().NameRaw = nameToSet
 end
-
+--- renders the current survivor name if SurvivorName options is enabled
+---@return void
 function SuperSurvivor:renderName()
 
 		if (not self.userName) or ((not self.JustSpoke) and ((not self:isInCell()) or (self:Get():getAlpha() ~= 1.0) or getSpecificPlayer(0)==nil or (not getSpecificPlayer(0):CanSee(self.player)))) then 
@@ -763,10 +762,15 @@ end
 --- END NAME ---
 
 --- DIALOGUE ---
+--- Sets that the survivor spoke recently with another survivor
+---@param playerID any
+---@return void
 function SuperSurvivor:SpokeTo(playerID)
 	self.SpokeToRecently[playerID] = true
 end
-
+--- checks if the survivor has recently spoke to another survivor
+---@param playerID any
+---@return boolean
 function SuperSurvivor:getSpokeTo(playerID)
 	if(self.SpokeToRecently[playerID] ~= nil) then 
 		return true
@@ -775,6 +779,8 @@ function SuperSurvivor:getSpokeTo(playerID)
 	end
 end
 
+--- checks if the survivor is speaking
+---@return boolean
 function SuperSurvivor:isSpeaking()
 	if(self.JustSpoke) or (self.player:isSpeaking()) then 
 		return true
@@ -782,7 +788,9 @@ function SuperSurvivor:isSpeaking()
 		return false 
 	end
 end
-
+--- Speaks a dialogue text
+---@param text string
+---@return void
 function SuperSurvivor:Speak(text)
 	if(SpeakEnabled) then
 		self.SayLine1 = text
@@ -791,9 +799,11 @@ function SuperSurvivor:Speak(text)
 	end
 end
 
+--- Speaks an action text if enabled
+---@param text string
+---@return void
 function SuperSurvivor:RoleplaySpeak(text)
 	if(SuperSurvivorGetOptionValue("RoleplayMessage") == 1) then
-		-- checks if the string already have '*' (some localizations have it)
 		if(text:match('^\*(.*)\*$')) then 
 			self.SayLine1 = text
 		else
@@ -807,16 +817,24 @@ end
 --- END DIALOGUE ---
 
 --- AI ---
+--- Sets the AI mode of a survivor
+---@param toValue AIMode
+---@return void
 function SuperSurvivor:setAIMode(toValue)
 	self.player:getModData().AIMode = toValue
 end
+--- Gets the AI mode of a survivor
+---@return AIMode
 function SuperSurvivor:getAIMode()
 	return self.player:getModData().AIMode
 end
 
+--- Sets if the current survivor is hostile
+--- Shows its name in Red if ShowHostileColor is enabled
+---@param toValue boolean 
+---@return void
 function SuperSurvivor:setHostile(toValue)
-	
-	if (Option_Display_Hostile_Color == 2) then	-- SuperSurvivorsMod.lua
+	if (Option_Display_Hostile_Color == 2) then	
 		if(toValue) then	
 			self.userName:setDefaultColors(128,128, 128, 255);
 			self.userName:setOutlineColors(180,0, 0,255);
@@ -831,12 +849,16 @@ function SuperSurvivor:setHostile(toValue)
 	if(ZombRand(2) == 1) then 
 		self.player:getModData().isRobber = true
 	end
-	
 end
- 
+
+--- sets the Brave Points of a survivor
+---@param toValue integer
+---@return void
 function SuperSurvivor:setBravePoints(toValue)
 	self.player:getModData().BravePoints = toValue
 end
+--- gets the Brave Points of a survivor
+---@return integer
 function SuperSurvivor:getBravePoints()
 	if(self.player:getModData().BravePoints ~= nil) then 
 		return self.player:getModData().BravePoints
@@ -845,12 +867,21 @@ function SuperSurvivor:getBravePoints()
 	end
 end
 
+function SuperSurvivor:getModData()
+	return self.player:getModData()
+end
+
+function SuperSurvivor:getTaskManager()
+	return self.MyTaskManager	
+end
 function SuperSurvivor:getCurrentTask()
 	return self:getTaskManager():getCurrentTask()
 end
 
+--- Checks if a survivor is too scared to fight
+--- It depends of enemies attacking, injuries, group members near by and weapons  
+---@return boolean returns true if the scary level is bigger than Brave Points
 function SuperSurvivor:isTooScaredToFight()
-	
 	if (self.EnemiesOnMe >= 3) then
 		return true
 	elseif (self.dangerSeenCount > 0 and (self:HasMultipleInjury() or not self:hasWeapon())) then 
@@ -872,12 +903,7 @@ function SuperSurvivor:isTooScaredToFight()
 
 		base = base + self:getBravePoints() + self:getGroupBraveryBonus()
 		return (self.dangerSeenCount > (base)) 
-		
 	end
-end
-
-function SuperSurvivor:Wait(ticks)
-	self.WaitTicks = ticks
 end
 --- END AI ---
 
@@ -928,8 +954,9 @@ function SuperSurvivor:getRunning()
 	return self.player:getModData().Running
 end
 
+--- Checks if the first or the next Task is Follow
+---@return boolean returns true if the current task or the next one from TaskManager is follow
 function SuperSurvivor:needToFollow()
-
 	local Task = self:getTaskManager():getTask()
 	if(Task) then 
 		if(Task.Name == "Follow" and Task:needToFollow()) then 
@@ -943,7 +970,6 @@ function SuperSurvivor:needToFollow()
 			return true 
 		end
 	end
-	
 	return false
 end
 
@@ -958,7 +984,7 @@ function SuperSurvivor:getRouteID()
 	end
 end
 
-function SuperSurvivor:NPCcalcFractureInjurySpeed(bodypart)
+function SuperSurvivor:calcFractureInjurySpeed(bodypart)
 	local b = 0.4;
 	if (bodypart:getFractureTime() > 10.0) then
 		b = 0.7;
@@ -972,7 +998,7 @@ function SuperSurvivor:NPCcalcFractureInjurySpeed(bodypart)
 	return math.max(0.0, b);
 end
 
-function SuperSurvivor:NPCcalculateInjurySpeed(bodypart,b)
+function SuperSurvivor:calculateInjurySpeed(bodypart,b)
 	local scratchSpeedModifier = bodypart:getScratchSpeedModifier();
 	local cutSpeedModifier = bodypart:getCutSpeedModifier();
 	local burnSpeedModifier = bodypart:getBurnSpeedModifier();
@@ -984,7 +1010,7 @@ function SuperSurvivor:NPCcalculateInjurySpeed(bodypart,b)
 			n = 0.7;
 		end
 		if (bodypart:getFractureTime() > 0.0) then
-			n = self:NPCcalcFractureInjurySpeed(bodypart);
+			n = self:calcFractureInjurySpeed(bodypart);
 		end
 	end
 	if (bodypart:haveBullet()) then
@@ -996,7 +1022,7 @@ function SuperSurvivor:NPCcalculateInjurySpeed(bodypart,b)
 			n = n / 2.0;
 		end
 		if (bodypart:getFractureTime() > 0.0) then
-			n = self:NPCcalcFractureInjurySpeed(bodypart);
+			n = self:calcFractureInjurySpeed(bodypart);
 		end
 	end
 	if (b and bodypart:getPain() > 20.0) then
@@ -1012,7 +1038,7 @@ function SuperSurvivor:NPCgetFootInjurySpeedModifier()
 	for i = BodyPartType.UpperLeg_L:index(), (BodyPartType.MAX:index() - 1) do
 		local bodydamage = self.player:getBodyDamage()
 		local bodypart = bodydamage:getBodyPart(BodyPartType.FromIndex(i));
-		local calculateInjurySpeed = self:NPCcalculateInjurySpeed(bodypart, false);
+		local calculateInjurySpeed = self:calculateInjurySpeed(bodypart, false);
 		if (b) then
 			n = n + calculateInjurySpeed;
 			b = false
@@ -4157,6 +4183,13 @@ function SuperSurvivor:Get()
 	return self.player
 end
 
+--- Set WaitTicks
+---@param ticks integer
+---@return void
+function SuperSurvivor:Wait(ticks)
+	self.WaitTicks = ticks
+end
+
 function SuperSurvivor:updateTime()
 		self:renderName()
 		self.Reducer = self.Reducer + 1 
@@ -4800,3 +4833,23 @@ function SuperSurvivor:getUnEquipedArmors()
 
 	return armors
 end
+
+--- ALIASES ---
+---@alias lootType string
+---| "Food"
+---| "Weapon"
+---| "Item"
+---| "Clothing"
+---| "Container"
+---| "Literature"
+
+---@alias AIMode string
+---| "Random Solo"
+---| "Wander"
+---| "Follow"
+---| "Follow Route"
+---| "Stand Ground"
+---| "Guard"
+---| "Doctor"
+---| "Farmer"
+--- END ALIASES ---
