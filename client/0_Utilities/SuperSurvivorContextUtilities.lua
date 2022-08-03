@@ -18,10 +18,18 @@ end
 ---| '"E"' # East
 ---| '"W"' # West
 
+---@class square represents a square of the map
+---@field getX fun(): integer
+---@field getY fun(): integer
+---@field getZ fun(): integer
+---@field isFree fun(isFree: boolean): boolean
+---@field isOutside fun(): boolean
+---@field getRoom fun(): room
+
 ---Get an adjacent square based on a direction
----@param square any  
+---@param square square  
 ---@param dir direction
----@return any the adjacent square
+---@return square the adjacent square
 function GetAdjSquare(square,dir)
 
 	if(dir == 'N') then
@@ -36,9 +44,9 @@ function GetAdjSquare(square,dir)
 end
 
 --- gets all squares between 2 positions (don't use it with large distances)
----@param from any start square
----@param to any target square 
----@return table returns a table with the squares between the start and target squares (includes the target square)
+---@param from square start square
+---@param to square target square 
+---@return square[] returns the squares between the start and target squares (includes the target square)
 function getSquaresBetween(from,to)
 	
 	local fromX = math.ceil(from:getX())
@@ -86,6 +94,10 @@ function getSquaresBetween(from,to)
 	return squares
 end
 
+--- gets a random and close square from outside of a building
+---@param square square
+---@param building any
+---@return square
 function getOutsideSquare(square,building)
 
 	if(not building) or (not square) then 
@@ -117,10 +129,10 @@ function getOutsideSquare(square,building)
 end
 
 -- TODO: remove this function and use getFleeSquareAlt
---- gets a random square awyas from the 'attackGuy'
+--- gets a random square away from the 'attackGuy'
 ---@param fleeGuy any 
 ---@param attackGuy any 
----@return any returns a random square away from attackGuy
+---@return square returns a random square away from attackGuy
 function getFleeSquare(fleeGuy,attackGuy)
 	return getFleeSquareAlt(fleeGuy,attackGuy,7)
 end
@@ -129,7 +141,7 @@ end
 ---@param fleeGuy any
 ---@param attackGuy any
 ---@param distanceToFlee number distance that the flee guy will search for
----@return any returns a random square in a distance away from attackGuy
+---@return square returns a random square in a distance away from attackGuy
 function getFleeSquareAlt(fleeGuy,attackGuy,distanceToFlee)
 	local distance = distanceToFlee
 	local tempx = (fleeGuy:getX() - attackGuy:getX());
@@ -259,8 +271,9 @@ end
 --- AREAS ----
 
 --- checks if the square is inside of the area 'area'
----@param sq any
----@param area table a table with 4 positions representing a square of points(number)
+---@param sq square
+---@param area number[] a table with 4 positions representing a square of points(number)
+---@return boolean returns true if the square is inside of area param
 function isSquareInArea(sq,area)
 
 	local x1 = area[1]
@@ -282,7 +295,7 @@ end
 ---@param y1 number
 ---@param y2 number
 ---@param z  number 
----@return any the center square given the coordinates
+---@return square the center square given the coordinates
 function getCenterSquareFromArea(x1,x2,y1,y2,z)
 
 	local xdiff = x2 - x1
@@ -295,7 +308,8 @@ function getCenterSquareFromArea(x1,x2,y1,y2,z)
 end
 
 --- gets a random square inside of an area
----@param area any 
+---@param area number[] 
+---@return square
 function getRandomAreaSquare(area)
 
 	local x1 = area[1]
@@ -594,8 +608,21 @@ end
 
 --- BUILDINGS ---
 
+---@class buidingdef
+---@field getX fun(): integer	
+---@field getY fun(): integer
+---@field getZ fun(): integer
+---@field getH fun(): integer
+---@field getW fun(): integer
+
+---@class room
+---@field getBuilding fun(): building
+
+---@class building
+---@field getDef fun(): buidingdef
+
 --- gets the amount of zombies inside and around a building
----@param building any
+---@param building building
 ---@return integer returns the amount of zombies found in the building
 function NumberOfZombiesInOrAroundBuilding(building)
 	local count = 0
@@ -630,8 +657,8 @@ function NumberOfZombiesInOrAroundBuilding(building)
 end
 
 --- gets a random square inside of a building
----@param building any
----@return any returns a random square inside of the building
+---@param building building
+---@return square returns a random square inside of the building
 function getRandomBuildingSquare(building)
 
 	local bdef = building:getDef()
@@ -647,8 +674,8 @@ function getRandomBuildingSquare(building)
 end
 
 --- gets a random and free square inside of a building (it tries 100 of times until it finds so be careful using it)
----@param building any
----@return any returns a random square inside of the building
+---@param building building
+---@return square returns a random square inside of the building or nil if not inside of the building
 function getRandomFreeBuildingSquare(building)
 
 	if(building == nil) then 
