@@ -113,7 +113,7 @@ function SurvivorTogglePVP()
 end
 
 ---	gets in the database the ammo type for the weapon 'weapon' 
----@param weapon any weapon to have the ammo searched
+---@param weapon weapon weapon to have the ammo searched
 ---@param incModule any (not being used)
 ---@return any returns the ammo type of the gun or nil if not found
 function getAmmoType(weapon,incModule)
@@ -175,7 +175,7 @@ function getAmmoType(weapon,incModule)
 end
 
 --- gets in the database bullets for the weapon 'weapon' 
----@param weapon any a HandWeapon
+---@param weapon weapon a HandWeapon
 ---@param incModule any
 function getAmmoBullets(weapon,incModule)
 
@@ -218,7 +218,7 @@ function getAmmoBullets(weapon,incModule)
 end
 
 --- gets the cover value of an specific object
----@param obj any the object that is being used as cover
+---@param obj worldobject the object that is being used as cover
 ---@return integer the integer value of the protection of the cover
 function getCoverValue(obj)
 	if (tostring(obj:getType()) == "wall") then return 0 -- walls behind player are blocking if on samve square

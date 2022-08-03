@@ -78,6 +78,9 @@ end
 ---@class weapon:item
 ---@field getMinDamage fun(): number
 ---@field getMaxDamage fun(): number
+---@field getAmmoType fun(): string
+---@field getType fun(): string
+---@field isAimedFirearm fun(): boolean
 
 ---@alias itemCategory
 ---| '"Food"'

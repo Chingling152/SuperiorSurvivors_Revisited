@@ -18,6 +18,9 @@ end
 ---| '"E"' # East
 ---| '"W"' # West
 
+---@class worldobject
+---@field getObjectName fun(): string
+
 ---@class square represents a square of the map
 ---@field getX fun(): integer
 ---@field getY fun(): integer
