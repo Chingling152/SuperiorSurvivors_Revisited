@@ -9,15 +9,15 @@
 ---@field ReadString fun(text:string):void 
 
 ---@class playerStats
----@field getHunger fun(): number
----@field getThirst fun(): number
+---@field getHunger :fun(): number
+---@field getThirst :fun(): number
 
 ---@class player
----@field isDead fun(): boolean
----@field getStats fun(): playerStats
+---@field isDead :fun(): boolean
+---@field getStats :fun(): playerStats
 ---@field getPerkLevel fun(perk: string): integer
----@field getCurrentSquare fun(): square 
----@field getModData fun(): modData 
+---@field getCurrentSquare :fun(): square 
+---@field getModData :fun(): modData 
 ---@field getInventory fun() : inventory
 
 ---@class modData
@@ -94,72 +94,72 @@
 --- BUILDINGS ---
 
 ---@class buildingdef
----@field getX fun(): integer	
----@field getY fun(): integer
----@field getZ fun(): integer
----@field getH fun(): integer
----@field getW fun(): integer
+---@field getX :fun(): integer	
+---@field getY :fun(): integer
+---@field getZ :fun(): integer
+---@field getH :fun(): integer
+---@field getW :fun(): integer
 
 ---@class room
----@field getBuilding fun(): building
+---@field getBuilding :fun(): building
 
 ---@class building
----@field getDef fun(): buildingdef
+---@field getDef :fun(): buildingdef
 
 --- END BUILDINGS ---
 
 --- SQUARES ---
 ---@class worldobject
----@field getObjectName fun(): string
----@field getSquare fun(): square
+---@field getObjectName :fun(): string
+---@field getSquare :fun(): square
 
 ---@class square 
----@field getX fun(): integer
----@field getY fun(): integer
----@field getZ fun(): integer
+---@field getX :fun(): integer
+---@field getY :fun(): integer
+---@field getZ :fun(): integer
 ---@field isFree fun(isFree: boolean): boolean
----@field isOutside fun(): boolean
----@field getRoom fun(): room
+---@field isOutside :fun(): boolean
+---@field getRoom :fun(): room
 
 --- END SQUARES ---
 
 --- ITEMS ---
 ---@class container
 ---@field FindAndReturnCategory fun(category:string): item
----@field getItems fun(): item[]
+---@field getItems :fun(): item[]
 
 ---@class inventory:container
 
 ---@class item
----@field getDisplayName fun(): string
----@field getCategory fun(): string
----@field getType fun(): string
----@field getWeight fun(): number
+---@field getDisplayName :fun(): string
+---@field getCategory :fun(): string
+---@field getType :fun(): string
+---@field getWeight :fun(): number
 
 ---@class food:item
----@field getFoodType fun(): foodType
----@field getPoisonPower fun(): number
----@field getHungerChange fun(): number
----@field getUnhappyChange fun(): number
----@field getBoredomChange fun(): number
----@field getHungerChange fun(): number
----@field isAlcoholic fun(): boolean
----@field isIsCookable fun(): boolean
----@field isCooked fun(): boolean
----@field isbDangerousUncooked fun(): boolean
----@field isSpice fun(): boolean
----@field isFresh fun(): boolean
----@field IsRotten fun(): boolean
+---@field getFoodType :fun(): foodType
+---@field getPoisonPower :fun(): number
+---@field getHungerChange :fun(): number
+---@field getUnhappyChange :fun(): number
+---@field getBoredomChange :fun(): number
+---@field getHungerChange :fun(): number
+---@field isAlcoholic :fun(): boolean
+---@field isIsCookable :fun(): boolean
+---@field isCooked :fun(): boolean
+---@field isbDangerousUncooked :fun(): boolean
+---@field isSpice :fun(): boolean
+---@field isFresh :fun(): boolean
+---@field IsRotten :fun(): boolean
 
 ---@class water:item
----@field isWaterSource fun(): boolean
+---@field isWaterSource :fun(): boolean
 
 ---@class weapon:item
----@field getMinDamage fun(): number
----@field getMaxDamage fun(): number
----@field getAmmoType fun(): string
----@field getType fun(): string
----@field isAimedFirearm fun(): boolean
+---@field getMinDamage :fun(): number
+---@field getMaxDamage :fun(): number
+---@field getAmmoType :fun(): string
+---@field getType :fun(): string
+---@field isAimedFirearm :fun(): boolean
 
 ---@alias itemCategory
 ---| '"Food"'
@@ -235,14 +235,14 @@
 ---@class TaskManager
 
 ---@class Task
----@field Name : string name of the task
----@field parent : any the one who is executing the task
----@field isValid fun() : boolean checks if the task is valid to be executed
----@field OnGoing : boolean checks if the task is being executed
----@field isComplete fun() : boolean checks if the task is complete
----@field Complete : boolean checks if the task is complete
----@field OnComplete fun() : void function that is called when the task is finished
----@field update fun() : void task execution
+---@field Name string name of the task
+---@field parent any the one who is executing the task
+---@field isValid :fun(): boolean checks if the task is valid to be executed
+---@field OnGoing boolean checks if the task is being executed
+---@field isComplete :fun(): boolean checks if the task is complete
+---@field Complete boolean checks if the task is complete
+---@field OnComplete :fun(): void function that is called when the task is finished
+---@field update :fun(): void task execution
 
 ---@class AttackTask:Task
 
