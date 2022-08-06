@@ -1,8 +1,10 @@
+---@type ThreatenTask
 ThreatenTask = {}
 ThreatenTask.__index = ThreatenTask
 
 function ThreatenTask:new(superSurvivor,Aite,Demands)
 
+	---@type ThreatenTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

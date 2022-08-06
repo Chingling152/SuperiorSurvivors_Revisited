@@ -1,4 +1,5 @@
 --- this file only contains aliases to improve auto-complete and documentation
+--- this file doenst have any code
 
 --- SUPER SURVIVOR ---
 ---@class userName
@@ -228,5 +229,98 @@
 ---| '"GirlNames"'
 ---| '"BoyNames"'
 --- END MISC. ---
+
+--- TASKS ---
+
+---@class TaskManager
+
+---@class Task
+---@field Name : string name of the task
+---@field parent : any the one who is executing the task
+---@field isValid fun() : boolean checks if the task is valid to be executed
+---@field OnGoing : boolean checks if the task is being executed
+---@field isComplete fun() : boolean checks if the task is complete
+---@field Complete : boolean checks if the task is complete
+---@field OnComplete fun() : void function that is called when the task is finished
+---@field update fun() : void task execution
+
+---@class AttackTask:Task
+
+---@class AttemptEntryIntoBuildingTask:Task
+
+---@class BarricadeBuildingTask:Task
+
+---@class ChopWoodTask:Task
+
+---@class CleanInvTask:Task
+
+---@class DoctorTask:Task
+
+---@class EatFoodTask:Task
+
+---@class EquipWeaponTask:Task
+
+---@class FarmingTask:Task
+---@field Seeds: string[] name of all typs of seeds
+
+---@class FindBuildingTask:Task
+
+---@class FindThisTask:Task
+
+---@class FindUnlootedBuildingTask:Task
+
+---@class FirstAideTask:Task
+
+---@class FleeFromHereTask:Task
+
+---@class FleeTask:Task
+
+---@class FollowTask:Task
+
+---@class FollowRouteTask:Task
+
+---@class ForageTask:Task
+
+---@class GatherWoodTask:Task
+
+---@class GoCheckItOutTask:Task
+
+---@class GuardTask:Task
+
+---@class HoldStillTask:Task
+
+---@class ListenTask:Task
+
+---@class LockDoorsTask:Task
+
+---@class LootCategoryTask:Task
+
+---@class PatrolTask:Task
+
+---@class PileCorpsesTask:Task
+
+---@class PursueTask:Task
+
+---@class ReturnToBaseTask:Task
+
+---@class SpeakDialogueTask:Task
+
+---@class SurenderTask:Task
+
+---@class TakeGiftTask:Task
+
+---@class ThreatenTask:Task
+
+---@class WanderTask:Task
+
+---@class WanderInAreaTask:Task
+
+---@class WanderInBaseTask:Task
+
+---@class WanderInBuildingTask:Task
+
+---@class WashSelfTask:Task
+
+--- END TASKS ---
 
 -- TODO : remove zomboid api docs (modData, player, inventory, userName)

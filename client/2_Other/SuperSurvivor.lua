@@ -3196,8 +3196,8 @@ end
 function SuperSurvivor:inFrontOfStairs()
 
 	local cs = self.player:getCurrentSquare()
-
 	if cs:HasStairs() then return true end
+
 	local osquare = GetAdjSquare(cs,"N")
 	if cs and osquare and osquare:HasStairs() then return true end
 	

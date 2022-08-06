@@ -1,8 +1,10 @@
+---@type PursueTask
 PursueTask = {}
 PursueTask.__index = PursueTask
 
 function PursueTask:new(superSurvivor, target)
 
+	---@type PursueTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

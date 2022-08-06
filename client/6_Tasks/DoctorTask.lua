@@ -1,8 +1,10 @@
+---@type DoctorTask
 DoctorTask = {}
 DoctorTask.__index = DoctorTask
 
 function DoctorTask:new(superSurvivor)
 
+	---@type DoctorTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

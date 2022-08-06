@@ -1,8 +1,10 @@
+---@type WashSelfTask
 WashSelfTask = {}
 WashSelfTask.__index = WashSelfTask
 
 function WashSelfTask:new(superSurvivor)
 
+	---@type WashSelfTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

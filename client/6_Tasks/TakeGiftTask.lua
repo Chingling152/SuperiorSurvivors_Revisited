@@ -1,8 +1,10 @@
+---@type TakeGiftTask
 TakeGiftTask = {}
 TakeGiftTask.__index = TakeGiftTask
 
 function TakeGiftTask:new(superSurvivor, gift)
 
+	---@type TakeGiftTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

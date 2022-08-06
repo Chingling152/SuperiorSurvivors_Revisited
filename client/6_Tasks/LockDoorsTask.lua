@@ -1,8 +1,10 @@
+---@type LockDoorsTask
 LockDoorsTask = {}
 LockDoorsTask.__index = LockDoorsTask
 
 function LockDoorsTask:new(superSurvivor, lock)
 
+	---@type LockDoorsTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

@@ -1,8 +1,10 @@
+---@type FollowTask
 FollowTask = {}
 FollowTask.__index = FollowTask
 
 function FollowTask:new(superSurvivor, FollowMeplayer)
 
+	---@type FollowTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

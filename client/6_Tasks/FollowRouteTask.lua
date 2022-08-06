@@ -1,8 +1,10 @@
+---@type FollowRouteTask
 FollowRouteTask = {}
 FollowRouteTask.__index = FollowRouteTask
 
 function FollowRouteTask:new(superSurvivor, RouteID)
 
+	---@type FollowRouteTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

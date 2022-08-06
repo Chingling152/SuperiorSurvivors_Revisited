@@ -1,8 +1,10 @@
+---@type ForageTask
 ForageTask = {}
 ForageTask.__index = ForageTask
 
 function ForageTask:new(superSurvivor)
 
+	---@type ForageTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

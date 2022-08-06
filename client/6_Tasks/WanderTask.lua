@@ -1,8 +1,10 @@
+---@type WanderTask
 WanderTask = {}
 WanderTask.__index = WanderTask
 
 function WanderTask:new(superSurvivor)
 
+	---@type WanderTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

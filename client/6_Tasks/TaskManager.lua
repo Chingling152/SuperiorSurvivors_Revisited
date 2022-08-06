@@ -1,5 +1,3 @@
----@class TaskManager
-
 ---@type TaskManager
 TaskManager = {}
 TaskManager.__index = TaskManager
@@ -30,9 +28,13 @@ function TaskManager:setTaskUpdateLimit(toValue)
 	self.TaskUpdateCount = 0
 end
 
+--- adds a new task to the top of priorities
+---@param newTask Task
+---@return void
 function TaskManager:AddToTop(newTask)
-	
-	if(newTask == nil) then return false end
+	if(newTask == nil) then 
+		return 
+	end
 	
 	self.LastLastTask = LastTask
 	self.LastTask = self:getCurrentTask()
@@ -56,6 +58,9 @@ function TaskManager:AddToTop(newTask)
 	
 end
 
+--- adds a new task to the bottom of priorities
+---@param newTask Task
+---@return void
 function TaskManager:AddToBottom(newTask)
 
 	self.Tasks[self.TaskCount] = newTask 
@@ -101,14 +106,22 @@ function TaskManager:moveDown()
 	return false
 end
 
+--- gets the name of the task on top 
+---@return string returns the name of the first task or "None" if there is not task
 function TaskManager:getCurrentTask()
-	if (self.Tasks[0] ~= nil) and (self.Tasks[0].Name ~= nil) then return self.Tasks[0].Name
-	else return "None" end
+	if (self.Tasks[0] ~= nil) and (self.Tasks[0].Name ~= nil) then 
+		return self.Tasks[0].Name
+	else 
+		return "None" 
+	end
 end
 
 function TaskManager:getTask()
-	if (self.Tasks[0] ~= nil) then return self.Tasks[0]
-	else return nil end
+	if (self.Tasks[0] ~= nil) then 
+		return self.Tasks[0]
+	else 
+		return nil 
+	end
 end
 
 function TaskManager:getThisTask(index)

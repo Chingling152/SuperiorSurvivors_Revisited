@@ -1,8 +1,10 @@
+---@type FindBuildingTask
 FindBuildingTask = {}
 FindBuildingTask.__index = FindBuildingTask
 
 function FindBuildingTask:new(superSurvivor)
 
+	---@type FindBuildingTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

@@ -1,8 +1,10 @@
+---@type PileCorpsesTask
 PileCorpsesTask = {}
 PileCorpsesTask.__index = PileCorpsesTask
 
 function PileCorpsesTask:new(superSurvivor, BringHere)
 
+	---@type PileCorpsesTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

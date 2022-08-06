@@ -1,8 +1,10 @@
+---@type FarmingTask
 FarmingTask = {}
 FarmingTask.__index = FarmingTask
 
 function FarmingTask:new(superSurvivor, BringHere)
 
+	---@type FarmingTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

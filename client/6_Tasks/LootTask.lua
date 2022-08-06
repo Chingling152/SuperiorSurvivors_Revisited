@@ -1,8 +1,10 @@
+---@type LootCategoryTask
 LootCategoryTask = {}
 LootCategoryTask.__index = LootCategoryTask
 
 function LootCategoryTask:new(superSurvivor, building , category, thisQuantity)
 
+	---@type LootCategoryTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

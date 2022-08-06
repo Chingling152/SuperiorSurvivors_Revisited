@@ -1,8 +1,10 @@
+---@type ChopWoodTask
 ChopWoodTask = {}
 ChopWoodTask.__index = ChopWoodTask
 
 function ChopWoodTask:new(superSurvivor)
 
+	---@type ChopWoodTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

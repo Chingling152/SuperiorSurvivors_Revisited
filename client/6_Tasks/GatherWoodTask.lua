@@ -1,8 +1,10 @@
+---@type GatherWoodTask
 GatherWoodTask = {}
 GatherWoodTask.__index = GatherWoodTask
 
 function GatherWoodTask:new(superSurvivor, BringHere)
 
+	---@type GatherWoodTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
