@@ -71,14 +71,6 @@ function getRandomSurvivorSuit(SS)
 	debugSuits(" ----- getRandomSurvivorSuit -----")
 end
 
----@alias rarity
----| '"Common"'
----| '"Uncommon"'
----| '"Normal"'
----| '"Rare"'
----| '"VeryRare"'
----| '"Legendary"'
-
 --- sets an outfit for a survivor given if table and outfit found 
 ---@param SS SuperSurvivor
 ---@param tbl rarity table name to be searched

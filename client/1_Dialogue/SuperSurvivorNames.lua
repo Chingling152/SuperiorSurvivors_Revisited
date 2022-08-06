@@ -22,10 +22,6 @@ local function getBoyNames()
   return names
 end
 
----@alias	gender
----| "GirlNames"
----| "BoyNames"
-
 --- gets a random survivor name based on gender
 ---@param key gender key of the name
 ---@return string a random survivor name

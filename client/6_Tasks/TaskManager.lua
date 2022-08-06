@@ -1,8 +1,12 @@
+---@class TaskManager
+
+---@type TaskManager
 TaskManager = {}
 TaskManager.__index = TaskManager
 
 function TaskManager:new(superSurvivor)
 
+	---@type TaskManager
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

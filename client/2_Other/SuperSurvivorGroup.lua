@@ -1,8 +1,13 @@
+---@type SuperSurvivorGroup
 SuperSurvivorGroup = {}
 SuperSurvivorGroup.__index = SuperSurvivorGroup
 
+--- Creates a new Group 
+---@param GID number
+---@return SuperSurvivorGroup
 function SuperSurvivorGroup:new(GID)
 
+	---@type SuperSurvivorGroup
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
@@ -14,6 +19,7 @@ function SuperSurvivorGroup:new(GID)
 	o.Members = {}
 	o.Bounds = {0,0,0,0,0}
 	
+	---@type GroupAreas
 	o.GroupAreas = {}
 	o.GroupAreas["ChopTreeArea"] = {0,0,0,0,0}
 	o.GroupAreas["TakeCorpseArea"] = {0,0,0,0,0}

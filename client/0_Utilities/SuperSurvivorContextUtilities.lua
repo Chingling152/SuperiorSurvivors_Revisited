@@ -18,17 +18,6 @@ end
 ---| '"E"' # East
 ---| '"W"' # West
 
----@class worldobject
----@field getObjectName fun(): string
-
----@class square represents a square of the map
----@field getX fun(): integer
----@field getY fun(): integer
----@field getZ fun(): integer
----@field isFree fun(isFree: boolean): boolean
----@field isOutside fun(): boolean
----@field getRoom fun(): room
-
 ---Get an adjacent square based on a direction
 ---@param square square  
 ---@param dir direction
@@ -610,19 +599,6 @@ end
 --- END DOORS ----
 
 --- BUILDINGS ---
-
----@class buidingdef
----@field getX fun(): integer	
----@field getY fun(): integer
----@field getZ fun(): integer
----@field getH fun(): integer
----@field getW fun(): integer
-
----@class room
----@field getBuilding fun(): building
-
----@class building
----@field getDef fun(): buidingdef
 
 --- gets the amount of zombies inside and around a building
 ---@param building building

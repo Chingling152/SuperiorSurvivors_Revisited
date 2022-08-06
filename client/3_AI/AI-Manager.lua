@@ -79,7 +79,7 @@ local function AiNPC_CanAttack(AiTmi,NPC)
 	local canAttack = not AiNpc_Task_Is_AnyOf(AiTmi,forbidenTasks)
 	local isInTheSameRoom = NPC:isInSameRoom(NPC.LastEnemeySeen)
 
-	local hasNotFellDown = not NPC:HasFellDown() 
+	local hasNotFellDown = not NPC:hasFellDown() 
 
 	local isNotTooScaredToFight = not NPC:isTooScaredToFight()
 
@@ -1075,7 +1075,7 @@ end
 			(TaskMangerIn:getCurrentTask() ~= "Barricade Building") and 
 			(ASuperSurvivor:hasWeapon())  and 
 			(ASuperSurvivor:getGroupRole() ~= "Companion") and			-- New
-			(ASuperSurvivor:isInSameBuildingWithEnemyAlt() == false)  and -- That way npc doesn't stop what they're doing moment they look away from a hostile
+			(ASuperSurvivor:isInSameBuildingWithEnemy() == false)  and -- That way npc doesn't stop what they're doing moment they look away from a hostile
 			(ASuperSurvivor:hasFood()) 
 		then
 			ASuperSurvivor:DebugSay("Wander in building Task condition met in AI manager! Reference number C_0001")
