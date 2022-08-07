@@ -2094,7 +2094,7 @@ function SuperSurvivor:getBuildingExplored(building)
 end
 
 --- Checks if the current building is unlooted
----@return boolean returns true if the survivor is inside a buidling and was not explored
+---@return boolean returns true if the survivor is inside a building and was not explored
 function SuperSurvivor:inUnLootedBuilding()
 	if(self.player:isOutside()) then 
 		return false 
@@ -3183,6 +3183,10 @@ end
 --- END COMBAT ---
 
 --- CONTEXT ---
+---TODO: deal with the IFOD functions
+
+--- gets the facing square
+---@return square
 function SuperSurvivor:getFacingSquare()	
 	local fsquare = square:getTileInDirection(self.player:getDir())
 	
@@ -3193,8 +3197,9 @@ function SuperSurvivor:getFacingSquare()
 	end
 end
 
+--- check if the current building is adjacent to a stair
+---@return boolean
 function SuperSurvivor:inFrontOfStairs()
-
 	local cs = self.player:getCurrentSquare()
 	if cs:HasStairs() then return true end
 
@@ -3211,11 +3216,14 @@ function SuperSurvivor:inFrontOfStairs()
 	if cs and osquare and osquare:HasStairs() then return true end
 	
 	return false 
-	
 end
 
+--- check if the current building is dangerous
+---@return boolean returns true if the survivor is isTooScaredToFight and the number of zombies inside of the building is greater than 9
 function SuperSurvivor:isTargetBuildingDangerous()
-	if self:isTargetBuildingClaimed(self.TargetBuilding) then return true end
+	if self:isTargetBuildingClaimed(self.TargetBuilding) then 
+		return true 
+	end
 
 	local result = NumberOfZombiesInOrAroundBuilding(self.TargetBuilding)
 	
@@ -3226,6 +3234,8 @@ function SuperSurvivor:isTargetBuildingDangerous()
 	end
 end
 
+--- get the current building of the survivor
+---@return building
 function SuperSurvivor:getBuilding()
 	if(self.player == nil) then 
 		return nil 
@@ -3247,11 +3257,16 @@ function SuperSurvivor:getBuilding()
 	
 	return nil
 end
+
+--- checks if the survivor is inside of some building
+---@param building building
+---@return boolean
 function SuperSurvivor:isInBuilding(building)
-	if(building == self:getBuilding()) then return true
-	else return false end
+	return building == self:getBuilding()
 end
 
+--- gets any adjacent door of the survivor
+---@return any
 function SuperSurvivor:inFrontOfDoor()
 
 	 local cs = self.player:getCurrentSquare()
@@ -3270,82 +3285,65 @@ function SuperSurvivor:inFrontOfDoor()
 	 return nil 
 	
 end
+
+--- checks if the door adjacent of the survivor is locked
+---@return boolean
 function SuperSurvivor:inFrontOfLockedDoor()
-
 	local door = self:inFrontOfDoor()
-			
-	if (door ~= nil) and (door:isLocked() or door:isLockedByKey() or door:isBarricaded()) and (not door:isDestroyed())  then
-		return true
-	else 
-		return false
-	end
-	
+	return (door ~= nil) and (door:isLocked() or door:isLockedByKey() or door:isBarricaded()) and (not door:isDestroyed())
 end
+
+--- checks if the door adjacent of the survivor is locked and the survivor is outside
+---@deprecated its just inFrontOfLockedDoor + self.player:isOutside()
+---@return boolean
 function SuperSurvivor:inFrontOfLockedDoorAndIsOutside()
-
 	local door = self:inFrontOfDoor()
-
-	if (door ~= nil) and (door:isLocked() or door:isLockedByKey() or door:isBarricaded()) and (self.player:isOutside()) then
-		return true
-	else 
-		return false
-	end
+	return (door ~= nil) and (door:isLocked() or door:isLockedByKey() or door:isBarricaded()) and (self.player:isOutside())
 end
+
+--- checks if the door adjacent of the survivor is locked and the survivor is inside
+---@deprecated same as inFrontOfLockedDoorAndIsOutside but is inside
+---@return boolean
 function SuperSurvivor:inFrontOfLockedDoorAndIsInside()
-
 	local door = self:inFrontOfDoor()
-
-	if (door ~= nil) and (door:isLocked() or door:isLockedByKey() or door:isBarricaded()) and (not self.player:isOutside()) then
-		return true
-	else 
-		return false
-	end
+	return (door ~= nil) and (door:isLocked() or door:isLockedByKey() or door:isBarricaded()) and (not self.player:isOutside())
 end
+
+--- checks if the door adjacent of the survivor is barricated
+---@return boolean
 function SuperSurvivor:inFrontOfBarricadedDoor()
-
 	local door = self:inFrontOfDoor()
-			
-	if (door ~= nil) and (door:isBarricaded())  then
-		return true
-	else 
-		return false
-	end
-	
+	return (door ~= nil) and (door:isBarricaded())	
 end
-function SuperSurvivor:NPC_IFOD_BarricadedInside() -- IFOD stands for In front of door 
-
-	local door = self:inFrontOfDoor()
-			
-	if (door ~= nil) and ((door:isBarricaded()) and (not self.player:isOutside()))  then
-		return true
-	else 
-		return false
-	end
-	
+--- checks if the door adjacent of the survivor is barricated and the survivor is inside
+---@deprecated no need for create a function for every
+---@return boolean
+function SuperSurvivor:NPC_IFOD_BarricadedInside()
+	local door = self:inFrontOfDoor()	
+	return (door ~= nil) and ((door:isBarricaded()) and (not self.player:isOutside()))	
 end
-function SuperSurvivor:NPC_IFOD_BarricadedOutside() -- IFOD stands for In front of door 
 
-	local door = self:inFrontOfDoor()
-			
-	if (door ~= nil) and (door:isBarricaded()) and (self.player:isOutside())  then
-		return true
-	else 
-		return false
-	end
-
+function SuperSurvivor:NPC_IFOD_BarricadedOutside()
+	local door = self:inFrontOfDoor()		
+	return (door ~= nil) and (door:isBarricaded()) and (self.player:isOutside())
 end
+
 function SuperSurvivor:inFrontOfWindow()
-
 	 local cs = self.player:getCurrentSquare()
 	 local fsquare = cs:getTileInDirection(self.player:getDir());
-	 if cs and fsquare then return cs:getWindowTo(fsquare)
-	 else return nil end
-	
-end
--- since inFrontOfWindow (not alt) doesn't have this function's code
-function SuperSurvivor:inFrontOfWindowAlt() 
 
-	 local cs = self.player:getCurrentSquare()
+	 if cs and fsquare then 
+		return cs:getWindowTo(fsquare)
+	 else 
+		return nil 
+	end
+end
+--- since inFrontOfWindow (not alt) doesn't have this function's code
+--- TODO: change function name to getAdjacentWindow
+---@return any
+function SuperSurvivor:inFrontOfWindowAlt() 
+	local cs = self.player:getCurrentSquare()
+
 	 local osquare = GetAdjSquare(cs,"N")
 	 if cs and osquare and cs:getWindowTo(osquare) then return cs:getWindowTo(osquare) end
 	 
@@ -4927,7 +4925,8 @@ function SuperSurvivor:loadPlayer(square, ID)
 	end
 end
 
---- respawn the survivor with the same things 
+--- respawn the survivor with the same state, items. 
+---@return void
 function SuperSurvivor:reload()
 	local level = SurvivorDebugEnum.Spawn
 
@@ -4941,7 +4940,7 @@ function SuperSurvivor:reload()
 	self.player = self:spawnPlayer(cs,nil)
 	self:loadPlayer(cs,id)
 
-		logSurvivorFunction(level, "reload")
+	logSurvivorFunction(level, "reload")
 end
 --- END SAVEFILES ---
 
