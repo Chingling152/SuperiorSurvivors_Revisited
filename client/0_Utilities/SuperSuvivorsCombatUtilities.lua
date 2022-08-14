@@ -216,3 +216,16 @@ function getAmmoBullets(weapon,incModule)
 
 	return nil
 end
+
+--- gets the cover value of an specific object
+---@param obj any the object that is being used as cover
+---@return integer the integer value of the protection of the cover
+function getCoverValue(obj)
+	if (tostring(obj:getType()) == "wall") then return 0 -- walls behind player are blocking if on samve square
+	elseif (obj:getObjectName() == "Tree") then return 25
+	elseif (obj:getObjectName() == "Window") then return 70
+	elseif (obj:getObjectName() == "Door") then return 80
+	elseif (obj:getObjectName() == "Counter") then return 80
+	elseif (obj:getObjectName() == "IsoObject") then return 10 -- drastically lowered because small stuff like garbage was blocking shots
+	else return 0 end
+end
