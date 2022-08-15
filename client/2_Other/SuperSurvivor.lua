@@ -1,13 +1,13 @@
 require "2_Other/SuperSurvivorPresetSpawns"
 require "2_Other/SuperSurvivorDebug"
-
+ 
 ---@type SuperSurvivor
 SuperSurvivor = {}
 SuperSurvivor.__index = SuperSurvivor
 
-SurvivorVisionCone = 0.90
-
+local SurvivorVisionCone = 0.90
 --- SPAWN ---
+
 --- Spawns a new survivor
 ---@param isFemale boolean
 ---@param square square
@@ -16,7 +16,7 @@ function SuperSurvivor:new(isFemale,square)
 	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"new")
 
 	---@type SuperSurvivor
-	local o = {}	
+	local o = {}
 	setmetatable(o, self)
 	self.__index = self
 	
@@ -55,7 +55,7 @@ function SuperSurvivor:new(isFemale,square)
 	o.seenCount = 0
 	o.dangerSeenCount = 0
 	o.MyTaskManager = TaskManager:new(o)
-	o.LastEnemeySeen = false
+	o.LastEnemeySeen = nil
 	o.Reducer = ZombRand(1,100)
 	o.Container = false
 	o.Room = false
@@ -185,7 +185,7 @@ function SuperSurvivor:newLoad(ID,square)
 	o.seenCount = 0
 	o.dangerSeenCount = 0
 	o.MyTaskManager = TaskManager:new(o)
-	o.LastEnemeySeen = false
+	o.LastEnemeySeen = nil
 	o.Reducer = ZombRand(1,100)
 	o.Container = false
 	o.Room = false
@@ -220,7 +220,7 @@ function SuperSurvivor:newLoad(ID,square)
 end
 
 --- Spawns a pre-set survivor
----@param player player
+---@param player IsoPlayer
 ---@return SuperSurvivor
 function SuperSurvivor:newSet(player)
 	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"newSet")
@@ -261,7 +261,7 @@ function SuperSurvivor:newSet(player)
 	o.seenCount = 0
 	o.dangerSeenCount = 0
 	o.MyTaskManager = TaskManager:new(o)
-	o.LastEnemeySeen = false
+	o.LastEnemeySeen = nil
 	o.Reducer = ZombRand(1,100)
 	o.Container = false
 	o.Room = false
@@ -288,6 +288,10 @@ function SuperSurvivor:newSet(player)
 	return o
 end
 
+--- func desc
+---@param square any
+---@param isFemale boolean
+---@return IsoPlayer
 function SuperSurvivor:spawnPlayer(square, isFemale)
 	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"spawnPlayer")
 	local BuddyDesc
@@ -301,7 +305,7 @@ function SuperSurvivor:spawnPlayer(square, isFemale)
 	
 	local Z = 0;
 	if(square:isSolidFloor()) then 
-		Z = square:getZ() 
+		Z = square:getZ()
 	end
 
 	local Buddy = IsoPlayer.new(getWorld():getCell(),BuddyDesc,square:getX(),square:getY(),Z)
@@ -341,8 +345,6 @@ function SuperSurvivor:spawnPlayer(square, isFemale)
 	--
 	logSurvivorPerks(Buddy)
 
-	local traits = Buddy:getTraits()
-	
 	Buddy:getTraits():add("Inconspicuous")
 	Buddy:getTraits():add("Outdoorsman")
 	Buddy:getTraits():add("LightEater")
@@ -395,14 +397,14 @@ function SuperSurvivor:spawnPlayer(square, isFemale)
 		namePrefix = getName("FarmerPrefix_Before") 
 		namePrefixAfter = getName("FarmerPrefix_After") 
 	end
-	
-	local nameToSet
+
+	local nameToSet = ""
 	if(Buddy:getModData().Name == nil) then
 		if Buddy:isFemale() then
 			nameToSet = getRandomName("GirlNames")	
 		else
 			nameToSet = getRandomName("BoyNames")			
-		end		
+		end
 	else
 		nameToSet = Buddy:getModData().Name
 	end
@@ -553,9 +555,10 @@ function SuperSurvivor:hasWater()
 end
 
 --- Triggers the ISTakeWaterAction task
+--- TODO: move to TaskManager ? maybe?
 ---@param waterObject worldobject
 ---@return void
-function SuperSurvivor:DrinkFromObject(waterObject) -- TODO: move to TaskManager ? maybe?
+function SuperSurvivor:DrinkFromObject(waterObject) 
 	self:Speak(getActionText("Drinking"))
 	if not waterObject:getSquare() or not luautils.walkAdj(self.player, waterObject:getSquare()) then
 		return
@@ -662,7 +665,7 @@ end
 --- gets the bravery bonus of a survivor for being in a group every 5 ticks
 --- the amount of bonus is determined by the amount of group member next to the survivor
 --- this function uses update ticks (5)
----@return integer returns the bravery bonus or zero if is groupless
+---@return number returns the bravery bonus or zero if is groupless
 function SuperSurvivor:getGroupBraveryBonus()
 	if(self.GroupBraveryUpdatedTicks % 5 == 0) then
 		if(self:getGroupID() == nil) then 
@@ -712,17 +715,17 @@ end
 
 --- POSITION ---
 --- gets the x position
----@return integer
+---@return number
 function SuperSurvivor:getX()
 	return self.player:getX()
 end
 --- gets the y position
----@return integer
+---@return number
 function SuperSurvivor:getY()
 	return self.player:getY()
 end
 --- gets the z position
----@return integer
+---@return number
 function SuperSurvivor:getZ()
 	return self.player:getZ()
 end
@@ -907,13 +910,13 @@ function SuperSurvivor:setHostile(toValue)
 end
 
 --- sets the Brave Points of a survivor
----@param toValue integer
+---@param toValue number
 ---@return void
 function SuperSurvivor:setBravePoints(toValue)
 	self.player:getModData().BravePoints = toValue
 end
 --- gets the Brave Points of a survivor
----@return integer
+---@return number
 function SuperSurvivor:getBravePoints()
 	if(self.player:getModData().BravePoints ~= nil) then 
 		return self.player:getModData().BravePoints
@@ -1050,14 +1053,14 @@ function SuperSurvivor:needToFollow()
 end
 
 --- sets the route id
----@param routeid integer
+---@param routeid number
 ---@return void
 function SuperSurvivor:setRouteID(routeid)
 	self.player:getModData().RouteID = routeid
 end
 
 --- gets the route id
----@return integer
+---@return number
 function SuperSurvivor:getRouteID()
 	if(self.player:getModData().RouteID == nil) then 
 		return 0
@@ -1068,7 +1071,7 @@ end
 
 --- calculates the speed based in fractures
 ---@param bodypart any
----@return integer
+---@return number
 function SuperSurvivor:calcFractureInjurySpeed(bodypart)
 	local b = 0.4;
 	if (bodypart:getFractureTime() > 10.0) then
@@ -1321,7 +1324,7 @@ end
 
 --- sets the walk attempts to a square
 ---@param sq square
----@param toThis integer
+---@param toThis number
 ---@return void
 function SuperSurvivor:setWalkToAttempt(sq,toThis)
 	if(sq) then
@@ -1332,7 +1335,7 @@ end
 
 --- gets the walk attempts to a square
 ---@param sq square
----@return integer the number of walk attempts
+---@return number the number of walk attempts
 function SuperSurvivor:getWalkToAttempt(sq)	
 	if(sq) then
 		local key = sq:getX()..sq:getY()
@@ -1412,9 +1415,9 @@ function SuperSurvivor:walkTo(square)
 end
 
 --- walks to a position
----@param x integer
----@param y integer
----@param z integer
+---@param x number
+---@param y number
+---@param z number
 ---@return void
 function SuperSurvivor:walkTowards(x,y,z)
 	local towardsSquare = getTowardsSquare(self:Get(),x,y,z)
@@ -1440,9 +1443,9 @@ end
 
 --- walks to a position using pathfinding
 --- its better for avoid iso objects and walls
----@param tx integer
----@param ty integer
----@param tz integer
+---@param tx number
+---@param ty number
+---@param tz number
 ---@return void
 function SuperSurvivor:WalkToPoint(tx, ty, tz) 
 	if(not self.player:getPathFindBehavior2():isTargetLocation(tx,ty,tz)) then
@@ -1453,9 +1456,9 @@ function SuperSurvivor:WalkToPoint(tx, ty, tz)
 end
 
 --- stops if the walks to is not possible
----@param tx integer
----@param ty integer
----@param tz integer
+---@param tx number
+---@param ty number
+---@param tz number
 ---@return void
 function SuperSurvivor:WalkToUpdate()
 	if(self.player:getModData().bWalking) then
@@ -1657,7 +1660,7 @@ end
 
 --- runs next to the main player 
 --- ERW stands for 'EnforceRunWalk'
----@param VarDist integer the distance of the player
+---@param VarDist number the distance of the player
 ---@return void
 function SuperSurvivor:NPC_ERW_AroundMainPlayer(VarDist)
 		-- Emergency failsafe to prevent NPCs from running into player
@@ -1674,7 +1677,7 @@ end
 
 --- runs next to the main player 
 --- ERW stands for 'EnforceRunWalk' walk priority
----@param VarDist integer the distance of the player
+---@param VarDist number the distance of the player
 ---@return void
 function SuperSurvivor:NPC_ERW_AroundMainPlayerReverse(VarDist)
 		-- Emergency failsafe to prevent NPCs from running into player
@@ -1899,7 +1902,7 @@ end
 
 --- Returns the amount of an item of type that the survivor holds
 ---@param thisType lootType
----@return integer The amount of an item inside the survivors inventory and bag
+---@return number The amount of an item inside the survivors inventory and bag
 function SuperSurvivor:FindAndReturnCount(thisType)
 	if(thisType == nil) then 
 		return 0 
@@ -1998,7 +2001,7 @@ end
 
 --- sets a looted square to a value
 ---@param sq square
----@param toThis integer 
+---@param toThis number 
 ---@param category lootType
 ---@return void
 function SuperSurvivor:setContainerSquareLooted(sq,toThis,category)
@@ -2010,7 +2013,7 @@ end
 --- Gets the amount of items of a category in a square 
 ---@param sq square square to be searched
 ---@param category lootType the name of the selected category
----@return integer the amount of items of the selected category
+---@return number the amount of items of the selected category
 function SuperSurvivor:getContainerSquareLooted(sq,category)	
 	local level = SurvivorDebugEnum.Looting
 	logSurvivorFunction(level, "getContainerSquareLooted")
@@ -2577,7 +2580,7 @@ end
 
 --- gets the amount of ammo the survivor has its inventory
 ---@param gun weapon
----@return integer
+---@return number
 function SuperSurvivor:getInventoryAmmoCount(gun)
 	local ammoType = gun:getAmmoType()
 	if ammoType then
@@ -2682,11 +2685,8 @@ end
 --- sets the equiped weapon ready
 ---@return boolean returns true if ReadyGun returns true or if its a meele weapon
 function SuperSurvivor:WeaponReady()
-	--print("WeaponReady " .. self:getName())
 	local primary = self.player:getPrimaryHandItem()
 	if(primary ~= nil) and (self.player ~= nil) and (instanceof(primary,"HandWeapon")) and (primary:isAimedFirearm()) then
-		--print("firearm")
-	
 		primary:setCondition(primary:getConditionMax())	
 		primary:setJammed(false);
 		primary:getModData().isJammed = nil 
@@ -2711,10 +2711,9 @@ function SuperSurvivor:WeaponReady()
 		end
 		
 		if(not ammo) then
-				--print("not ammo")
-				self.TriggerHeldDown = false
-				ammo = self:openBoxForGun()
-			
+			--print("not ammo")
+			self.TriggerHeldDown = false
+			ammo = self:openBoxForGun()
 		else
 			
 		end
@@ -2742,9 +2741,7 @@ function SuperSurvivor:openBoxForGun()
 		end
 	end
 	
-	if(ammoBox) then 
-		--print("ammoBox")
-		
+	if(ammoBox) then 	
 		local ORGMEnabled = false
 		if(isModEnabled("ORGM")) then 
 			ORGMEnabled = true 
@@ -2764,8 +2761,7 @@ function SuperSurvivor:openBoxForGun()
 		else
 			count = (getBoxCount(ammoBox:getType()) / groupcount)
 		end
-							
-		--print("box tyoe count was "..tostring(count))
+
 		for i=1, count do
 			--print("in loop!")
 			inv:AddItem(modl..ammotype)
@@ -2782,7 +2778,6 @@ end
 ---@return boolean
 function SuperSurvivor:hasAmmoForPrevGun()
 	if(self.AmmoTypes ~= nil) and (#self.AmmoTypes > 0) then 	
-		
 		local ammoRound
 		for i=1,#self.AmmoTypes do		
 			ammoRound = self:FindAndReturn(self.AmmoTypes[i])
@@ -2825,7 +2820,6 @@ function SuperSurvivor:reEquipGun()
 		end
 		return
 	end
-
 end
 --- re-equips the survivor's meele weapon
 ---@return void
@@ -2894,7 +2888,9 @@ end
 function SuperSurvivor:hasFellDown()
 	return self.player:getModData().felldown
 end
-	
+
+--- checks if the survivor can attack
+---@return boolean
 function SuperSurvivor:canAttack()
 	return not self:hasSwipedState() and not self:hasFellDown()
 end
@@ -2927,8 +2923,6 @@ function SuperSurvivor:checkVictimCoverValue(victim)
 
 	totalCover = totalCover/ blockingObjects
 	
-	--print("total cover : " .. tostring(totalCover))
-
 	return totalCover - 10  -- workaround (see line 4085)
 end
 
@@ -2976,8 +2970,7 @@ end
 --- TODO: join the attack functions
 ---@param victim player
 ---@return void
-function SuperSurvivor:NPC_Attack(victim)
-	
+function SuperSurvivor:NPC_Attack(victim)	
 	if (not self:Is_AtkTicksZero()) and (self:canAttack()) then
 		self:AtkTicks_Countdown()
 		return 
@@ -3026,7 +3019,6 @@ function SuperSurvivor:NPC_Attack(victim)
 		end
 	end	
 end
-	
 
 --- This is the old variant of the attack function. It should not be used for melee attacks. It works well with guns though, so...
 --- TODO: move it to attack task
@@ -3185,8 +3177,8 @@ end
 --- CONTEXT ---
 ---TODO: deal with the IFOD functions
 
---- gets the facing square
----@return square
+--- gets the facing square of the survivor 
+---@return square return the square in front of the survivor or the current square of the survivor if there is no square in front of the survivor
 function SuperSurvivor:getFacingSquare()	
 	local fsquare = square:getTileInDirection(self.player:getDir())
 	
@@ -3227,11 +3219,7 @@ function SuperSurvivor:isTargetBuildingDangerous()
 
 	local result = NumberOfZombiesInOrAroundBuilding(self.TargetBuilding)
 	
-	if(result >= 10) and (self:isTooScaredToFight()) then 
-		return true
-	else 
-		return false 
-	end
+	return (result >= 10) and (self:isTooScaredToFight())
 end
 
 --- get the current building of the survivor
@@ -3268,22 +3256,20 @@ end
 --- gets any adjacent door of the survivor
 ---@return any
 function SuperSurvivor:inFrontOfDoor()
-
-	 local cs = self.player:getCurrentSquare()
-	 local osquare = GetAdjSquare(cs,"N")
-	 if cs and osquare and cs:getDoorTo(osquare) then return cs:getDoorTo(osquare) end
-	 
-	 osquare = GetAdjSquare(cs,"E")
-	 if cs and osquare and cs:getDoorTo(osquare) then return cs:getDoorTo(osquare) end
-	 
-	 osquare = GetAdjSquare(cs,"S")
-	 if cs and osquare and cs:getDoorTo(osquare) then return cs:getDoorTo(osquare) end
-	 
-	 osquare = GetAdjSquare(cs,"W")
-	 if cs and osquare and cs:getDoorTo(osquare) then return cs:getDoorTo(osquare) end
-	 
-	 return nil 
+	local cs = self.player:getCurrentSquare()
+	local osquare = GetAdjSquare(cs,"N")
+	if cs and osquare and cs:getDoorTo(osquare) then return cs:getDoorTo(osquare) end
 	
+	osquare = GetAdjSquare(cs,"E")
+	if cs and osquare and cs:getDoorTo(osquare) then return cs:getDoorTo(osquare) end
+	
+	osquare = GetAdjSquare(cs,"S")
+	if cs and osquare and cs:getDoorTo(osquare) then return cs:getDoorTo(osquare) end
+	
+	osquare = GetAdjSquare(cs,"W")
+	if cs and osquare and cs:getDoorTo(osquare) then return cs:getDoorTo(osquare) end
+	
+	return nil 
 end
 
 --- checks if the door adjacent of the survivor is locked
@@ -3316,13 +3302,24 @@ function SuperSurvivor:inFrontOfBarricadedDoor()
 	return (door ~= nil) and (door:isBarricaded())	
 end
 --- checks if the door adjacent of the survivor is barricated and the survivor is inside
----@deprecated no need for create a function for every
+---@deprecated no need for create a function for every if else case
 ---@return boolean
 function SuperSurvivor:NPC_IFOD_BarricadedInside()
 	local door = self:inFrontOfDoor()	
 	return (door ~= nil) and ((door:isBarricaded()) and (not self.player:isOutside()))	
 end
 
+
+
+
+
+
+
+
+
+
+--- 
+---@return boolean
 function SuperSurvivor:NPC_IFOD_BarricadedOutside()
 	local door = self:inFrontOfDoor()		
 	return (door ~= nil) and (door:isBarricaded()) and (self.player:isOutside())
@@ -3359,7 +3356,10 @@ function SuperSurvivor:inFrontOfWindowAlt()
 	 return nil 
  
 end
-function SuperSurvivor:inFrontOfBarricadedWindowAlt()-- Used door locked code for this, added 'alt' to function name just to be safe for naming
+--- 
+--- Used door locked code for this, added 'alt' to function name just to be safe for naming
+---@return boolean
+function SuperSurvivor:inFrontOfBarricadedWindowAlt()
 	local window = self:inFrontOfWindowAlt()
 
 	if (window ~= nil) and (window:isBarricaded()) then
@@ -3368,36 +3368,38 @@ function SuperSurvivor:inFrontOfBarricadedWindowAlt()-- Used door locked code fo
 		return false
 	end
 end
-function SuperSurvivor:inFrontOfWindowAndIsOutsideAlt()-- Used door locked code for this, added 'alt' to function name just to be safe for naming
+---
+--- Used door locked code for this, added 'alt' to function name just to be safe for naming
+---@return boolean
+function SuperSurvivor:inFrontOfWindowAndIsOutsideAlt()
 	local window = self:inFrontOfWindowAlt()
 
-	if (window ~= nil) and (self.player:isOutside()) then
-		return true
-	else 
-		return false
-	end
+	return (window ~= nil) and (self.player:isOutside())
 end
-function SuperSurvivor:inFrontOfBarricadedWindowAndIsOutsideAlt()-- Used door locked code for this, added 'alt' to function name just to be safe for naming
+
+---
+--- Used door locked code for this, added 'alt' to function name just to be safe for naming
+---@deprecated no need for create a function for every if else case
+---@return boolean
+function SuperSurvivor:inFrontOfBarricadedWindowAndIsOutsideAlt()
 	local window = self:inFrontOfWindowAlt()
 
-	if (window ~= nil) and (window:isBarricaded()) and (self.player:isOutside()) then
-		return true
-	else 
-		return false
-	end
+	return (window ~= nil) and (window:isBarricaded()) and (self.player:isOutside())
 end
-function SuperSurvivor:NPC_inFrontOfUnBarricadedWindowOutside()-- Is the NPC front of an UNbarricaded window AND is the NPC outside?
+---
+--- Is the NPC front of an UNbarricaded window AND is the NPC outside?
+---@deprecated no need for create a function for every if else case
+---@return boolean
+function SuperSurvivor:NPC_inFrontOfUnBarricadedWindowOutside()
 	local window = self:inFrontOfWindowAlt()
 
-	if (window ~= nil) and (not window:isBarricaded()) and (self.player:isOutside()) then
-		return true
-	else 
-		return false
-	end
-	self:DebugSay("NPC In front of Unbarricaded Window Outside: Window is barricaded("..tostring(window:isBarricaded())..") and Is outside("..tostring(self.player:isOutside())..")")
+	return (window ~= nil) and (not window:isBarricaded()) and (self.player:isOutside()) 
 end
+
+--- get the closest unbarricaded window of a building
+---@param building building
+---@return any
 function SuperSurvivor:getUnBarricadedWindow(building)
-
 	local pcs = self.player:getCurrentSquare()
 	local WindowOut = nil
 	local closestSoFar = 100
@@ -3412,23 +3414,23 @@ function SuperSurvivor:getUnBarricadedWindow(building)
 					local Object = Objs:get(j)
 					local objectSquare = Object:getSquare()
 					local distance = getDistanceBetween(objectSquare,self.player)
-					if(instanceof(Object,"IsoWindow"))  and (self:getWalkToAttempt(objectSquare) < 8) and distance < closestSoFar then
-						
-						 local barricade = Object:getBarricadeForCharacter(self.player)
-						 if barricade == nil or (barricade:canAddPlank()) then 
+					if(instanceof(Object,"IsoWindow"))  and (self:getWalkToAttempt(objectSquare) < 8) and (distance < closestSoFar) then						
+						local barricade = Object:getBarricadeForCharacter(self.player)
+						if (barricade == nil) or (barricade:canAddPlank()) then 
 							closestSoFar = distance	
 							WindowOut = Object 
 						end
 					end
 				end	
 			end
-			
-		end
-							
+		end					
 	end
 	return WindowOut
 end
 
+--- 
+---@param sq square
+---@return void
 function SuperSurvivor:Explore(sq)
 	if(sq) then
 		local key = tostring(sq:getX()).. "/" ..tostring(sq:getY())
@@ -3439,6 +3441,8 @@ function SuperSurvivor:Explore(sq)
 		end
 	end
 end
+--- 
+---@param sq square
 function SuperSurvivor:getExplore(sq)	
 	if(sq) then
 		local key = tostring(sq:getX()).. "/" ..tostring(sq:getY())
@@ -3451,8 +3455,13 @@ function SuperSurvivor:getExplore(sq)
 	end
 	return 0
 end
+--- 
+---@param sq square
 function SuperSurvivor:MarkAttemptedBuildingExplored(building)
-	if(building == nil) then return false end
+	if(building == nil) then
+		return
+	end
+
 	local bdef = building:getDef()	
 	for x=bdef:getX(),(bdef:getX() + bdef:getW()) do	
 		for y=bdef:getY(),(bdef:getY() + bdef:getH()) do
@@ -4527,7 +4536,7 @@ function SuperSurvivor:Get()
 end
 
 --- Set WaitTicks
----@param ticks integer
+---@param ticks number
 ---@return void
 function SuperSurvivor:Wait(ticks)
 	self.WaitTicks = ticks
@@ -4892,7 +4901,7 @@ end
 --- It doesnt use "self" variable so it can be moved to other file 
 ---@param square any the square that the survivor will be loaded
 ---@param ID any the ID of the survivor (needs to be inside the savefiles)
----@return table returns Survivor if the file exists
+---@return player returns Survivor if the file exists
 function SuperSurvivor:loadPlayer(square, ID)
 	local level = SurvivorDebugEnum.Other
 	logSurvivorFunction(level,"loadPlayer")

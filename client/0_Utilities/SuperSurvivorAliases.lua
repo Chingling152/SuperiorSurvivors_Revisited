@@ -2,26 +2,26 @@
 --- this file doenst have any code
 
 --- SUPER SURVIVOR ---
----@class userName
+---@class TextDrawObject
 ---@field setAllowAnyImage fun(set: boolean):void 
 ---@field setDefaultFont fun(font: any):void 
 ---@field setDefaultColors fun(r: number, g: number, b: number, a: number):void 
 ---@field ReadString fun(text:string):void 
 
 ---@class playerStats
----@field getHunger :fun(): number
----@field getThirst :fun(): number
+---@field getHunger fun(): number
+---@field getThirst fun(): number
 
----@class player
----@field isDead :fun(): boolean
----@field getStats :fun(): playerStats
----@field getPerkLevel fun(perk: string): integer
----@field getCurrentSquare :fun(): square 
----@field getModData :fun(): modData 
+---@class IsoPlayer
+---@field isDead fun(): boolean
+---@field getStats fun(): playerStats
+---@field getPerkLevel fun(perk: string): number
+---@field getCurrentSquare fun(): square 
+---@field getModData fun(): modData 
 ---@field getInventory fun() : inventory
 
 ---@class modData
----@field ID integer the id of the survivor
+---@field ID number the id of the survivor
 ---@field Name string the name of the survivor
 ---@field NameRaw string
 ---@field PVP boolean 
@@ -31,53 +31,39 @@
 ---@field semiHostile boolean
 ---@field hitByCharacter boolean
 ---@field seenZombie boolean
----@field BravePoints integer
+---@field BravePoints number
 ---@field AIMode AIMode
----@field RWP integer
+---@field RWP number
 ---@field NoParty boolean
 ---@field Group string
----@field FollowCharID integer id of the survivor that the current is following
----@field RouteID integer
+---@field FollowCharID number id of the survivor that the current is following
+---@field RouteID number
 ---@field bWalking boolean
 ---@field Sneaking boolean
 ---@field Running boolean
 ---@field felldown boolean
 ---@field LockNLoad boolean
 ---@field NeedAmmo boolean
----@field AmmoCount integer
+---@field AmmoCount number
 ---@field ammotype string
 ---@field ammoBoxtype string
 ---@field meleWeapon boolean
 ---@field gunWeapon boolean
----@field LastSquareSaveX integer
----@field LastSquareSaveY integer
----@field LastSquareSaveZ integer
----@field RealPlayer integer
----@field PX integer    first x position of the square for patrolling
----@field PY integer    first y position of the square for patrolling
----@field PZ integer    first z position of the square for patrolling
----@field P2X integer   second x position of the square for patrolling
----@field P2Y integer   second y position of the square for patrolling
----@field P2Z integer   second z position of the square for patrolling
+---@field LastSquareSaveX number
+---@field LastSquareSaveY number
+---@field LastSquareSaveZ number
+---@field RealPlayer number
+---@field PX number    first x position of the square for patrolling
+---@field PY number    first y position of the square for patrolling
+---@field PZ number    first z position of the square for patrolling
+---@field P2X number   second x position of the square for patrolling
+---@field P2Y number   second y position of the square for patrolling
+---@field P2Z number   second z position of the square for patrolling
 ---@field ShowName boolean
 ---@field Greeting string
 ---@field InitGreeting string
 ---@field Toggle boolean
 ---@field dealBreaker boolean
-
----@class SuperSurvivor
----@field GroupRole groupRole
----@field SquareContainerSquareLooteds table
----@field SquaresExplored table 
----@field AttackRange number 
----@field BravePoints integer 
----@field UsingFullAuto boolean 
----@field NoFoodNear boolean 
----@field NoWaterNear boolean 
----@field seenCount integer 
----@field userName userName 
----@field LastEnemeySeen player 
----@field player player 
 
 ---@alias AIMode string
 ---| '"Random Solo"'
@@ -89,79 +75,93 @@
 ---| '"Doctor"'
 ---| '"Farmer"'
 
+---@class SuperSurvivor
+---@field GroupRole groupRole
+---@field SquareContainerSquareLooteds table
+---@field SquaresExplored table 
+---@field AttackRange number 
+---@field BravePoints number
+---@field UsingFullAuto boolean 
+---@field NoFoodNear boolean 
+---@field NoWaterNear boolean 
+---@field seenCount number
+---@field userName TextDrawObject 
+---@field LastEnemeySeen IsoPlayer 
+---@field player IsoPlayer
+
 --- END SUPER SURVIVOR ---
 
 --- BUILDINGS ---
 
 ---@class buildingdef
----@field getX :fun(): integer	
----@field getY :fun(): integer
----@field getZ :fun(): integer
----@field getH :fun(): integer
----@field getW :fun(): integer
+---@field getX fun(): number	
+---@field getY fun(): number
+---@field getZ fun(): number
+---@field getH fun(): number
+---@field getW fun(): number
 
 ---@class room
----@field getBuilding :fun(): building
+---@field getBuilding fun(): building
 
 ---@class building
----@field getDef :fun(): buildingdef
+---@field getDef fun(): buildingdef
 
 --- END BUILDINGS ---
 
 --- SQUARES ---
 ---@class worldobject
----@field getObjectName :fun(): string
----@field getSquare :fun(): square
+---@field getObjectName fun(): string
+---@field getSquare fun(): square
 
 ---@class square 
----@field getX :fun(): integer
----@field getY :fun(): integer
----@field getZ :fun(): integer
+---@field getX fun(): number
+---@field getY fun(): number
+---@field getZ fun(): number
 ---@field isFree fun(isFree: boolean): boolean
----@field isOutside :fun(): boolean
----@field getRoom :fun(): room
+---@field isOutside fun(): boolean
+---@field getRoom fun(): room
 
 --- END SQUARES ---
 
 --- ITEMS ---
 ---@class container
 ---@field FindAndReturnCategory fun(category:string): item
----@field getItems :fun(): item[]
+---@field getItems fun(): item[]
 
 ---@class inventory:container
 
 ---@class item
----@field getDisplayName :fun(): string
----@field getCategory :fun(): string
----@field getType :fun(): string
----@field getWeight :fun(): number
+---@field getDisplayName fun(): string
+---@field getCategory fun(): string
+---@field getType fun(): string
+---@field getWeight fun(): number
 
 ---@class food:item
----@field getFoodType :fun(): foodType
----@field getPoisonPower :fun(): number
----@field getHungerChange :fun(): number
----@field getUnhappyChange :fun(): number
----@field getBoredomChange :fun(): number
----@field getHungerChange :fun(): number
----@field isAlcoholic :fun(): boolean
----@field isIsCookable :fun(): boolean
----@field isCooked :fun(): boolean
----@field isbDangerousUncooked :fun(): boolean
----@field isSpice :fun(): boolean
----@field isFresh :fun(): boolean
----@field IsRotten :fun(): boolean
+---@field getFoodType fun(): foodType
+---@field getPoisonPower fun(): number
+---@field getHungerChange fun(): number
+---@field getUnhappyChange fun(): number
+---@field getBoredomChange fun(): number
+---@field getHungerChange fun(): number
+---@field isAlcoholic fun(): boolean
+---@field isIsCookable fun(): boolean
+---@field isCooked fun(): boolean
+---@field isbDangerousUncooked fun(): boolean
+---@field isSpice fun(): boolean
+---@field isFresh fun(): boolean
+---@field IsRotten fun(): boolean
 
 ---@class water:item
----@field isWaterSource :fun(): boolean
+---@field isWaterSource fun(): boolean
 
 ---@class weapon:item
----@field getMinDamage :fun(): number
----@field getMaxDamage :fun(): number
----@field getAmmoType :fun(): string
----@field getType :fun(): string
----@field isAimedFirearm :fun(): boolean
+---@field getMinDamage fun(): number
+---@field getMaxDamage fun(): number
+---@field getAmmoType fun(): string
+---@field getType fun(): string
+---@field isAimedFirearm fun(): boolean
 
----@alias itemCategory
+---@alias itemCategory string
 ---| '"Food"'
 ---| '"Water"'
 ---| '"Weapon"'
@@ -174,7 +174,7 @@
 ---| '"Container"'
 ---| '"Literature"'
 
----@alias foodType
+---@alias foodType string
 ---| '"NoExplicit"'
 ---| '"Fruits"'
 ---| '"Vegetables"'
@@ -184,7 +184,7 @@
 ---| '"Meat"'
 ---| '"Egg"'
 
----@alias rarity
+---@alias rarity string
 ---| '"Common"'
 ---| '"Uncommon"'
 ---| '"Normal"'
@@ -195,7 +195,7 @@
 --- END ITEMS ---
 
 --- GROUPS --- 
----@alias groupRole
+---@alias groupRole string
 ---|'"Worker"'
 ---|'"Companion"'
 ---|'"Dustman"'
@@ -207,27 +207,27 @@
 ---|'"Follow"'
 
 ---@class SuperSurvivorGroup
+---@field Bounds number[]
+---@field GroupAreas GroupAreas
 
 ---@class GroupAreas
----@field ChopTreeArea integer[]
----@field TakeCorpseArea integer[]
----@field TakeWoodArea integer[]
----@field FarmingArea integer[]
----@field ForageArea integer[]
----@field CorpseStorageArea integer[]
----@field FoodStorageArea integer[]
----@field WoodStorageArea integer[]
----@field ToolStorageArea integer[]
----@field WeaponStorageArea integer[]
----@field MedicalStorageArea integer[]
----@field GuardArea integer[]
+---@field ChopTreeArea number[]
+---@field TakeCorpseArea number[]
+---@field TakeWoodArea number[]
+---@field FarmingArea number[]
+---@field ForageArea number[]
+---@field CorpseStorageArea number[]
+---@field FoodStorageArea number[]
+---@field WoodStorageArea number[]
+---@field ToolStorageArea number[]
+---@field WeaponStorageArea number[]
+---@field MedicalStorageArea number[]
+---@field GuardArea number[]
 
 --- END GROUPS --- 
 
 --- MISC. ---
----@alias	gender
----| '"GirlNames"'
----| '"BoyNames"'
+---@alias	gender "GirlNames"|"BoyNames"
 --- END MISC. ---
 
 --- TASKS ---
@@ -237,12 +237,12 @@
 ---@class Task
 ---@field Name string name of the task
 ---@field parent any the one who is executing the task
----@field isValid :fun(): boolean checks if the task is valid to be executed
+---@field isValid fun(): boolean checks if the task is valid to be executed
 ---@field OnGoing boolean checks if the task is being executed
----@field isComplete :fun(): boolean checks if the task is complete
+---@field isComplete fun(): boolean checks if the task is complete
 ---@field Complete boolean checks if the task is complete
----@field OnComplete :fun(): void function that is called when the task is finished
----@field update :fun(): void task execution
+---@field OnComplete fun(): void function that is called when the task is finished
+---@field update fun(): void task execution
 
 ---@class AttackTask:Task
 
@@ -261,7 +261,7 @@
 ---@class EquipWeaponTask:Task
 
 ---@class FarmingTask:Task
----@field Seeds: string[] name of all typs of seeds
+---@field Seeds string[] name of all typs of seeds
 
 ---@class FindBuildingTask:Task
 
@@ -323,4 +323,4 @@
 
 --- END TASKS ---
 
--- TODO : remove zomboid api docs (modData, player, inventory, userName)
+-- TODO : remove zomboid api docs (modData, IsoPlayer, inventory, userName)

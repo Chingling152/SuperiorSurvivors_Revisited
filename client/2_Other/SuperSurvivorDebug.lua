@@ -4,7 +4,7 @@ local SurvivorDebugConfigs = {
   }
 }
 
----@alias SurvivorDebugEnum integer
+---@alias SurvivorDebugEnum number
 ---|"1" Spawn Logs
 ---|"2" Update Logs
 ---|"3" Combat Logs
@@ -12,7 +12,7 @@ local SurvivorDebugConfigs = {
 ---|"5" Looting Logs
 ---|"6" Other Logs
 
----@alias DebugLogEnum integer
+---@alias DebugLogEnum number
 ---|"1" Default Log
 ---|"2" Function Log
 ---|"3" Label/Value Log
@@ -54,8 +54,8 @@ end
 --- SURVIVOR GENERIC LOGS  ---
 
 --- Generic log for survivor
----@param type integer|DebugLogEnum 
----@param level integer|SurvivorDebugEnum
+---@param type number|DebugLogEnum 
+---@param level number|SurvivorDebugEnum
 local function logSurvivor(type,level,...)
   if (canLogThisLevel(level)) then
     if type == DebugLogEnum.Log then
@@ -75,21 +75,21 @@ end
 
 --- Default log for survivor
 --- Any text after the param level will be considered the message 
----@param level integer|SurvivorDebugEnum The level of the log text
+---@param level number|SurvivorDebugEnum The level of the log text
 function logSurvivorLog(level,...)
   logSurvivor(DebugLogEnum.Log, level,...)
 end
 
 --- Logs the start/end of a function for survivor,
 --- Any text after the param level will be considered the message 
----@param level integer|SurvivorDebugEnum The level of the log text
+---@param level number|SurvivorDebugEnum The level of the log text
 function logSurvivorFunction(level,text)
   logSurvivor(DebugLogEnum.Function,level,text)
 end
 
 --- Logs a label and value separated by " : "
 --- Any text after the param level will be considered the message 
----@param level integer|SurvivorDebugEnum The level of the log text
+---@param level number|SurvivorDebugEnum The level of the log text
 ---@param label string
 ---@param value any
 function logSurvivorValues(level,label,value)
@@ -98,7 +98,7 @@ end
 
 --- Logs an error by throwing an exception (use this method if its really an error)
 --- Any text after the param level will be considered the message 
----@param level integer|SurvivorDebugEnum The level of the log text
+---@param level number|SurvivorDebugEnum The level of the log text
 function logSurvivorError(level,...)
   logSurvivor(DebugLogEnum.Error,level,...)
 end

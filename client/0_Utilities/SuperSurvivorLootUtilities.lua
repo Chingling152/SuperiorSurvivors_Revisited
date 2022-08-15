@@ -349,7 +349,7 @@ end
 --- gets the best food in a container next to the 'survivor'
 ---@param thisItemContainer container
 ---@param survivor SuperSurvivor 
----@return item returns the best food based on a score system
+---@return food returns the best food based on a score system
 function FindAndReturnBestFood(thisItemContainer, survivor)
 	if(not thisItemContainer) then 
     return nil 

@@ -92,7 +92,7 @@ end
 
 --- gets the size of a table
 ---@param a table
----@return integer returns the size of the table
+---@return number returns the size of the table
 function size(a)
 	local i = 1
 	 	while a[i] do

@@ -36,9 +36,7 @@ function SuperSurvivorGroup:new(GID)
 	o.GroupAreas["GuardArea"] = {0,0,0,0,0}
 	
 	return o
-
 end
-
 function SuperSurvivorGroup:setROE(tothis)
 	self.ROE = tothis
 end
@@ -55,15 +53,20 @@ function SuperSurvivorGroup:getFollowCount()
 	return count
 end
 
+--- checks if two survivors are enemies
+---@param SS any
+---@param character any
+---@return boolean
 function SuperSurvivorGroup:isEnemy(SS,character)
-
-	-- zombie is enemy to anyone
-	if character:isZombie() then return true 
-	elseif (SS:isInGroup(character)) then return false
-	elseif (SS.player:getModData().isHostile ~= true and character:getModData().surender == true) then return false -- so other npcs dont attack anyone surendering
-	elseif (SS.player:getModData().hitByCharacter == true) and (character:getModData().semiHostile == true) then return true 
+	if character:isZombie() then 
+		return true 
+	elseif (SS:isInGroup(character)) then 
+		return false
+	elseif (SS.player:getModData().isHostile ~= true and character:getModData().surender == true) then 
+		return false -- so other npcs dont attack anyone surendering
+	elseif (SS.player:getModData().hitByCharacter == true) and (character:getModData().semiHostile == true) then 
+		return true 
 	elseif (character:getModData().isHostile ~= SS.player:getModData().isHostile) then 
-		--print(tostring(character:getForname()).."("..tostring(character:getModData().Group)..") is enemy to "..SS:getName().."("..tostring(self:getGroupID()))
 		return true
 	elseif(self.ROE == 4) then
 		return true

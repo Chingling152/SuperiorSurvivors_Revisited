@@ -53,7 +53,7 @@ end
 
 --- func desc
 ---@param box string ammo box name
----@return integer returns the amount of bullets inside of the ammo box
+---@return number returns the amount of bullets inside of the ammo box
 function getBoxCount(box)
 	if (box == "BB177Box") then return 500
 	elseif (box == "Bullets22Box") then return 100
@@ -219,7 +219,7 @@ end
 
 --- gets the cover value of an specific object
 ---@param obj worldobject the object that is being used as cover
----@return integer the integer value of the protection of the cover
+---@return number the number value of the protection of the cover
 function getCoverValue(obj)
 	if (tostring(obj:getType()) == "wall") then return 0 -- walls behind player are blocking if on samve square
 	elseif (obj:getObjectName() == "Tree") then return 25
