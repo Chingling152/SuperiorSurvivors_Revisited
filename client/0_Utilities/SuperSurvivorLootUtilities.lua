@@ -51,7 +51,7 @@ end
 --- finds the item inside of a 'container' based on the 'category'
 ---@param container container the container that the item will be searched
 ---@param category itemCategory the type of item that the item will be searched
----@param survivor any survivor searching for item (only in food searching)
+---@param survivor SuperSurvivor survivor searching for item (only in food searching)
 ---@return item returns the item insde of the container with the selected category or nil if not found
 function FindItemByCategory(container, category, survivor)
 
@@ -86,6 +86,7 @@ end
 --- END CATEGORIES ---
 
 --- WEAPONS ---
+
 --- gets a weapon inside of a 'container'
 ---@param container container container to be searched
 ---@return weapon returns the first weapon inside the container or nil if not found

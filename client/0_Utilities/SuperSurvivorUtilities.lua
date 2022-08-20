@@ -120,6 +120,10 @@ function has_value (tab, val)
   return false
 end
 
+--- Converts any number to a positive value (abs)
+--- @deprecated use math.abs(value)
+---@param value number
+---@return number
 function AbsoluteValue(value)
 	if(value >= 0) then 
 		return value;

@@ -1190,7 +1190,7 @@ end
 --- gets speed modifier
 ---@return number
 function SuperSurvivor:NPCgetfullSpeedMod() 
-	local NPCfullSpeedMod
+	local NPCfullSpeedMod = 0
 	local NPCbagRunSpeedModifier = 0
 	if (self.player:getClothingItem_Back() ~= nil) and (instanceof(self.player:getClothingItem_Back(),"InventoryContainer")) then
 		NPCbagRunSpeedModifier = NPCbagRunSpeedModifier + self:NPCcalcRunSpeedModByBag(self.player:getClothingItem_Back():getItemContainer())
@@ -1211,7 +1211,7 @@ function SuperSurvivor:NPCcalculateWalkSpeed()
 	local NPCfootInjurySpeedModifier = self:NPCgetFootInjurySpeedModifier();
 	self.player:setVariable("WalkInjury", NPCfootInjurySpeedModifier);
 	local NPCcalculateBaseSpeed = self.player:calculateBaseSpeed();
-	local wmax;
+	local wmax = 0;
 	if self:getRunning() == true then
 		wmax = ((NPCcalculateBaseSpeed - 0.15) * self:NPCgetfullSpeedMod() + self.player:getPerkLevel(Perks.FromString("Sprinting")) / 20.0 - AbsoluteValue(NPCfootInjurySpeedModifier / 1.5));
 	else
@@ -1372,7 +1372,6 @@ function SuperSurvivor:isWalking()
 end
 
 --- Walks to a square
----@deprecated try WalkToDirect instead
 ---@param square square
 ---@return void
 function SuperSurvivor:walkTo(square)
@@ -1577,7 +1576,7 @@ function SuperSurvivor:NPC_ManageLockedDoors()
 end
 
 --- manage with locked doors from outside
----@deprecated Older attempts : use NPC_ManageLockedDoors
+---@deprecated Older attempt : use NPC_ManageLockedDoors
 ---@return void
 function SuperSurvivor:ManageOutdoorStuck()
 	-- TODO : remove these lines to test
@@ -1602,7 +1601,7 @@ function SuperSurvivor:ManageOutdoorStuck()
 end
 
 --- manage with locked doors from inside
----@deprecated Older attempts : use NPC_ManageLockedDoors
+---@deprecated Older attempt : use NPC_ManageLockedDoors
 ---@return void
 function SuperSurvivor:ManageIndoorStuck()
 	if (self:inFrontOfLockedDoor()) and (not self.player:isOutside()) and (self:getTaskManager():getCurrentTask() ~= "Wander") then
@@ -1923,6 +1922,47 @@ function SuperSurvivor:FindAndReturnCount(thisType)
 			
 	return count
 end
+
+--- checks if the survivor needs the ammo
+---@param itemType string
+function SuperSurvivor:isAmmoForMe(itemType)
+	if(self.AmmoTypes) and (#self.AmmoTypes > 0) then		
+		for i=1, #self.AmmoTypes do		
+			if(itemType == self.AmmoTypes[i]) then 
+				return true 
+			end
+		end	
+	end
+	if(self.AmmoBoxTypes) and (#self.AmmoBoxTypes > 0) then		
+		for i=1, #self.AmmoBoxTypes do		
+			if(itemType == self.AmmoBoxTypes[i]) then 
+				return true 
+			end
+		end	
+	end
+
+	return false
+end
+
+--- forces the survivor to have an item by re-adding in its inventory if necessary
+---@param item item
+---@return item
+function SuperSurvivor:ensureInInv(item)
+	if(self:getBag():contains(item)) then 
+		self:getBag():Remove(item) 
+	end
+
+	if(item:getWorldItem() ~= nil) then
+		item:getWorldItem():removeFromSquare()
+		item:setWorldItem(nil)
+	end
+
+	if(not self:Get():getInventory():contains(item)) then 
+		self:Get():getInventory():AddItem(item) 
+	end
+
+	return item
+end
 --- END INVENTORY ---
 
 --- LOOTING ---
@@ -2115,7 +2155,7 @@ function SuperSurvivor:inUnLootedBuilding()
 	
 	return false
 end
---- 
+--- checks if the survivor explored
 ---@param building any
 ---@return boolean returns true if the 
 function SuperSurvivor:AttemptedLootBuilding(building)
@@ -2234,8 +2274,8 @@ function SuperSurvivor:isEnemy(character)
 
 end
 
---- checks if the survivor is using a weapon
----@return boolean
+--- gets if the survivor is using a weapon
+---@return weapon
 function SuperSurvivor:hasWeapon()
 	if(self.player:getPrimaryHandItem() ~= nil) and (instanceof(self.player:getPrimaryHandItem(),"HandWeapon")) then
 		return self.player:getPrimaryHandItem() 
@@ -2245,7 +2285,7 @@ function SuperSurvivor:hasWeapon()
 end
 
 --- checks if the survivor is using a firearm
----@deprecated it does the same as usingGun()
+---@deprecated use usingGun() instead
 ---@return boolean
 function SuperSurvivor:hasGun()
 	local primaryWeapon = self.player:getPrimaryHandItem()
@@ -2362,7 +2402,7 @@ function SuperSurvivor:enemyIsOutside()
 	return false
 end
 
--- checks if the enemy has a gun
+-- checks if the LastEnemeySeen has a gun
 ---@return boolean
 function SuperSurvivor:EnemyHasGun()
 	
@@ -2949,9 +2989,9 @@ function SuperSurvivor:getWeaponDamage(weapon,distance)
 end
 
 --- Gets the change of a shoot based on aiming skill, weapon, victim's distance and cover
---- TODO: re-add rng	damage
+--- TODO: re-add rng damage
 ---@param weapon weapon
----@param victim player
+---@param victim IsoPlayer
 ---@return number represents the chance of a hit
 function SuperSurvivor:getGunHitChange(weapon,victim)
 	local aimingLevel = self.player:getPerkLevel(Perks.FromString("Aiming"))
@@ -2968,7 +3008,7 @@ end
 
 --- The new function that will now control NPC attacking. Not perfect, but. Cleaner code, and works better-ish.
 --- TODO: join the attack functions
----@param victim player
+---@param victim IsoPlayer
 ---@return void
 function SuperSurvivor:NPC_Attack(victim)	
 	if (not self:Is_AtkTicksZero()) and (self:canAttack()) then
@@ -3022,7 +3062,7 @@ end
 
 --- This is the old variant of the attack function. It should not be used for melee attacks. It works well with guns though, so...
 --- TODO: move it to attack task
----@param victim player  
+---@param victim IsoPlayer  
 ---@return void
 function SuperSurvivor:Attack(victim)
 	local level = SurvivorDebugEnum.Combat;
@@ -3280,7 +3320,7 @@ function SuperSurvivor:inFrontOfLockedDoor()
 end
 
 --- checks if the door adjacent of the survivor is locked and the survivor is outside
----@deprecated its just inFrontOfLockedDoor + self.player:isOutside()
+---@deprecated it's just inFrontOfLockedDoor + self.player:isOutside()
 ---@return boolean
 function SuperSurvivor:inFrontOfLockedDoorAndIsOutside()
 	local door = self:inFrontOfDoor()
@@ -3308,15 +3348,6 @@ function SuperSurvivor:NPC_IFOD_BarricadedInside()
 	local door = self:inFrontOfDoor()	
 	return (door ~= nil) and ((door:isBarricaded()) and (not self.player:isOutside()))	
 end
-
-
-
-
-
-
-
-
-
 
 --- 
 ---@return boolean
@@ -3428,8 +3459,8 @@ function SuperSurvivor:getUnBarricadedWindow(building)
 	return WindowOut
 end
 
---- 
----@param sq square
+--- sets a square as explored
+---@param sq square the square to be explored
 ---@return void
 function SuperSurvivor:Explore(sq)
 	if(sq) then
@@ -3441,8 +3472,9 @@ function SuperSurvivor:Explore(sq)
 		end
 	end
 end
---- 
+--- gets the amount of time some square was explored by the survivor
 ---@param sq square
+---@return number usually returns 1 when its explored and 0 when its not
 function SuperSurvivor:getExplore(sq)	
 	if(sq) then
 		local key = tostring(sq:getX()).. "/" ..tostring(sq:getY())
@@ -3455,8 +3487,10 @@ function SuperSurvivor:getExplore(sq)
 	end
 	return 0
 end
---- 
----@param sq square
+
+--- marks a whole building as explored
+---@param building building
+---@return void
 function SuperSurvivor:MarkAttemptedBuildingExplored(building)
 	if(building == nil) then
 		return
@@ -3473,6 +3507,10 @@ function SuperSurvivor:MarkAttemptedBuildingExplored(building)
 		end							
 	end
 end
+
+--- resets the building as explored and explored attempts
+---@param building building
+---@return void
 function SuperSurvivor:resetBuildingWalkToAttempts(building)
 	if(building == nil) then return false end
 	local bdef = building:getDef()	
@@ -3487,6 +3525,8 @@ function SuperSurvivor:resetBuildingWalkToAttempts(building)
 	end
 end
 
+--- sets the nearest building as a target to be explored
+---@return void
 function SuperSurvivor:NPC_ForceFindNearestBuilding()
 	if(self.TargetSquare ~= nil) and (self.TargetSquare:getRoom()) and (self.TargetSquare:getRoom():getBuilding()) then 
 		self.TargetBuilding = self.TargetSquare:getRoom():getBuilding() 
@@ -3495,6 +3535,9 @@ end
 --- END CONTEXT ---
 
 --- RELATIONSHIP ---
+
+--- gets the relationship of the survivor with the player
+---@return number
 function SuperSurvivor:getRelationshipWP()
 	if(self.player:getModData().RWP == nil) then 
 		return 0
@@ -3502,6 +3545,10 @@ function SuperSurvivor:getRelationshipWP()
 		return self.player:getModData().RWP 
 	end	
 end
+
+--- sums the relationship of the survivor with the player
+---@param thisAmount number
+---@return void
 function SuperSurvivor:PlusRelationshipWP(thisAmount)
 	if(self.player:getModData().RWP == nil) then 
 		self.player:getModData().RWP = 0 
@@ -3513,6 +3560,12 @@ end
 --- END RELATIONSHIP ---
 
 --- DEBUG ---
+
+---TODO : improve Debug
+
+--- says a text in debug mode
+---@deprecated this function does nothing
+---@param text any
 function SuperSurvivor:NPCDebugPrint(text)
 	if (DebugOptions == true) then
 		-- This gives spacing for the console so you can find it
@@ -3525,6 +3578,9 @@ function SuperSurvivor:NPCDebugPrint(text)
 	end
 end
 
+--- says a text in debug mode and all infor of the survivor in debug mode
+---@param text any
+---@return void
 function SuperSurvivor:DebugSay(text) 
 	-- Now, the In game DebugOptions will now effect this.
 	local zDebugSayDistance = DebugOption_DebugSay_Distance
@@ -3713,9 +3769,9 @@ function SuperSurvivor:DebugSay(text)
 	end
 end
 
--- Built for pursueTaskSE, to keep clean code
--- Set the local var debugging in function to 1 to enable superdebugging of the function
--- Otherwise the NPC will just say in game what the value is. I will create another option for this
+--- Built for pursueTaskSE, to keep clean code
+--- Set the local var debugging in function to 1 to enable superdebugging of the function
+--- Otherwise the NPC will just say in game what the value is. I will create another option for this
 function SuperSurvivor:zDebugSayPTSC(zTxtRef,zTxtRefNum)
 	-- Exclusive function debugger- 	--
 	-- -------------------------------- --
@@ -3733,42 +3789,44 @@ end
 --- END DEBUG ---
 
 --- TASKS ---
--- TODO: create task for this
+
+--- wears a clothing
+---@param ClothingItemName item
+---@return void
 function SuperSurvivor:WearThis(ClothingItemName)
  
-	 local ClothingItem
- 
-	 if(instanceof(ClothingItemName,"InventoryItem")) then 
-		 ClothingItem = ClothingItemName
-	 else 
-		 ClothingItem = instanceItem(ClothingItemName) 
-	 end
-		
-	 if not ClothingItem then 
-		 return 
-	 end
-	 
-	 self.player:getInventory():AddItem(ClothingItem)
- 
-	 if instanceof(ClothingItem, "InventoryContainer") and ClothingItem:canBeEquipped() ~= "" then
-		 --self.player:setWornItem(ClothingItem:canBeEquipped(), ClothingItem);
-		 self.player:setClothingItem_Back(ClothingItem)
-		 getPlayerData(self.player:getPlayerNum()).playerInventory:refreshBackpacks();
-		 --self.player:initSpritePartsEmpty();
-	 elseif ClothingItem:getCategory() == "Clothing" then
-		 if ClothingItem:getBodyLocation() ~= "" then
-			 --print(ClothingItem:getDisplayName() .. " " ..tostring(ClothingItem:getBodyLocation()))
-			 self.player:setWornItem(ClothingItem:getBodyLocation(), nil);
-			 self.player:setWornItem(ClothingItem:getBodyLocation(), ClothingItem);
-		 end
-	 else
-		 return
-	 end
-	 
-	 self.player:initSpritePartsEmpty();
-	 triggerEvent("OnClothingUpdated", self.player)
+	local ClothingItem
+
+	if(instanceof(ClothingItemName,"InventoryItem")) then 
+		ClothingItem = ClothingItemName
+	else 
+		ClothingItem = instanceItem(ClothingItemName) 
+	end
+	
+	if not ClothingItem then 
+		return 
+	end
+	
+	self.player:getInventory():AddItem(ClothingItem)
+
+	if instanceof(ClothingItem, "InventoryContainer") and ClothingItem:canBeEquipped() ~= "" then
+		self.player:setClothingItem_Back(ClothingItem)
+		getPlayerData(self.player:getPlayerNum()).playerInventory:refreshBackpacks();
+	elseif ClothingItem:getCategory() == "Clothing" then
+		if ClothingItem:getBodyLocation() ~= "" then
+			self.player:setWornItem(ClothingItem:getBodyLocation(), nil);
+			self.player:setWornItem(ClothingItem:getBodyLocation(), ClothingItem);
+		end
+	else
+		return
+	end
+	
+	self.player:initSpritePartsEmpty();
+	triggerEvent("OnClothingUpdated", self.player)
  
 end
+--- checks if the survivor is doing any TimedActionQueue or if its walking
+---@return boolean
 function SuperSurvivor:isInAction()
 
 	if((self.player:getModData().bWalking == true) and (self.TicksSinceSquareChanged <= 10)) then
@@ -3787,46 +3845,58 @@ function SuperSurvivor:isInAction()
 		end
   end
 	
-	return false;
-		
+	return false		
 end
 
 -- Individual task checklist. This list is used to help for AI-manager lua to not be a clutter
--- TODO: remove it (its TMI responsability)
+
 function SuperSurvivor:NPCTask_Clear()
 	self:getTaskManager():clear()
 end
 
+---@deprecated this function should be moved to TaskManager
 function SuperSurvivor:NPCTask_DoAttack()
 	if (self:getTaskManager():getCurrentTask() ~= "Attack") then
 		self:getTaskManager():AddToTop(AttackTask:new(self))
 	end
 end
+
+---@deprecated this function should be moved to TaskManager
 function SuperSurvivor:NPCTask_DoThreaten()
 	if (self:getTaskManager():getCurrentTask() ~= "Threaten") then
 		self:getTaskManager():AddToTop(ThreatenTask:new(self,self.LastEnemeySeen,"Scram"))
 	end
 end
+
+---@deprecated this function should be moved to TaskManager
 function SuperSurvivor:NPCTask_DoWander()
 	if (self:getTaskManager():getCurrentTask() ~= "Wander") then
 		self:getTaskManager():AddToTop(WanderTask:new(self))
 	end
 end
+
+---@deprecated this function should be moved to TaskManager
 function SuperSurvivor:NPCTask_DoFindUnlootedBuilding()
 	if (self:getTaskManager():getCurrentTask() ~= "Find New Building") then
 		self:getTaskManager():AddToTop(FindUnlootedBuildingTask:new(self))
 	end
 end
+
+---@deprecated this function should be moved to TaskManager
 function SuperSurvivor:NPCTask_DoFleeFromHere()
 	if (self:getTaskManager():getCurrentTask() ~= "Flee From Spot") or (self:getTaskManager():getCurrentTask() ~= "Flee") then	
 		self:getTaskManager():AddToTop(FleeFromHereTask:new(self,self.player:getCurrentSquare()))
 	end
 end
-function SuperSurvivor:NPCTask_DoFlee() -- Which is different from ^
+
+---@deprecated this function should be moved to TaskManager
+function SuperSurvivor:NPCTask_DoFlee()
 	if (self:getTaskManager():getCurrentTask() ~= "Flee") or (self:getTaskManager():getCurrentTask() ~= "Flee From Spot") then	
 		self:getTaskManager():AddToTop(FleeTask:new(self))
 	end
 end
+
+---@deprecated this function should be moved to TaskManager or AttackTask
 function SuperSurvivor:Task_IsAttack()
 	if (self:getTaskManager():getCurrentTask() == "Attack") then
 		return true
@@ -3834,6 +3904,8 @@ function SuperSurvivor:Task_IsAttack()
 		return false
 	end
 end
+
+---@deprecated this function should be moved to TaskManager or ThreatenTask
 function SuperSurvivor:Task_IsThreaten()
 	if (self:getTaskManager():getCurrentTask() == "Threaten") then
 		return true
@@ -3841,6 +3913,7 @@ function SuperSurvivor:Task_IsThreaten()
 		return false
 	end
 end
+---@deprecated this function should be moved to TaskManager or SurenderTask
 function SuperSurvivor:Task_IsSurender()
 	if (self:getTaskManager():getCurrentTask() == "Surender") then
 		return true
@@ -3848,6 +3921,8 @@ function SuperSurvivor:Task_IsSurender()
 		return false
 	end
 end
+
+---@deprecated this function should be moved to TaskManager or DoctorTask
 function SuperSurvivor:Task_IsDoctor()
 	if (self:getTaskManager():getCurrentTask() == "Doctor") then
 		return true
@@ -3855,6 +3930,8 @@ function SuperSurvivor:Task_IsDoctor()
 		return false
 	end
 end
+
+---@deprecated this function should be moved to TaskManager or WanderTask
 function SuperSurvivor:Task_IsWander()
 	if (self:getTaskManager():getCurrentTask() == "Wander") then
 		return true
@@ -3862,6 +3939,8 @@ function SuperSurvivor:Task_IsWander()
 		return false
 	end
 end
+
+---@deprecated this function should be moved to TaskManager or PursueTask
 function SuperSurvivor:Task_IsPursue()
 	if (self:getTaskManager():getCurrentTask() == "Pursue") then
 		return true
@@ -3869,28 +3948,31 @@ function SuperSurvivor:Task_IsPursue()
 		return false
 	end
 end
+---@deprecated this function should be moved to TaskManager or FleeTask
 function SuperSurvivor:Task_IsFlee()
 	return self:getTaskManager():getCurrentTask() ~= "Flee"
 end
--- Test Functions
+---@deprecated this function should be moved to TaskManager
 function SuperSurvivor:TMI_CTOneVar_IsNot(Var1)
 	if (self:getTaskManager():getCurrentTask() ~= Var1) then
 		return true
 	end
 end
+---@deprecated this function should be moved to TaskManager or FleeTask
 function SuperSurvivor:Task_IsFleeFromSpot()
 	if (self:getTaskManager():getCurrentTask() ~= "Flee From Spot") then
 		return true
 	end
 end
+---@deprecated this function should be moved to TaskManager or FleeTask
 function SuperSurvivor:Task_IsFleeOrFleeFromSpot()
 	if (not (self:getTaskManager():getCurrentTask() == "Flee")) and (not (self:getTaskManager():getCurrentTask() == "Flee From Spot")) then
 		return true
 	end
 end
 
---TODO : Create a IsAnyOf
--- NPC:TMI_CTFourVars_IsNot("Surender", "Flee", "Flee From Spot", "Clean Inventory")
+--- TODO : Create a IsAnyOf
+---@deprecated this function should be moved to TaskManager 
 function SuperSurvivor:TMI_CTFourVars_IsNot(Var1,Var2,Var3,Var4)
 	if (self:getTaskManager():getCurrentTask() ~= Var1) 
 	and (self:getTaskManager():getCurrentTask() ~= Var2)
@@ -3901,8 +3983,9 @@ function SuperSurvivor:TMI_CTFourVars_IsNot(Var1,Var2,Var3,Var4)
 	end
 end
 
--- TODO: remove it
--- I'm tired of writing long precise 'ifs' so, Xor it is (IDK and IDC if that's what 'Xor' means.)
+--- TODO: remove it
+--- I'm tired of writing long precise 'ifs' so, Xor it is (IDK and IDC if that's what 'Xor' means.)
+---@return boolean
 function SuperSurvivor:NPC_IFOD_Xor_BlockedDoor()
 	if (self:inFrontOfLockedDoorAndIsOutside() == true) then
 		return true
@@ -3913,9 +3996,12 @@ function SuperSurvivor:NPC_IFOD_Xor_BlockedDoor()
 	end
 end
 
--- Super Function: Pursue_SC - Point system for the NPC to pursue a target.
--- Pursue, as far as I've seen, is used any time the NPC needs to reach their target, either it be zombie or human.
--- Todo: add self:RealCanSee(self.LastEnemeySeen) senses
+--- Super Function: Pursue_SC - Point system for the NPC to pursue a target.
+--- Pursue, as far as I've seen, is used any time the NPC needs to reach their target, either it be zombie or human.
+--- TODO: add self:RealCanSee(self.LastEnemeySeen) senses
+--- Checks if the current task is pursuing the last seen enemy
+--- TODO: move it to TaskManager (or AIManager)
+---@return void
 function SuperSurvivor:NPC_CheckPursueScore()
 	
 	if (self.LastEnemeySeen ~= nil) then
@@ -4043,7 +4129,7 @@ function SuperSurvivor:NPC_CheckPursueScore()
 end
 
 --- Checks if the current task is pursuing the last seen enemy
----@deprecated move it to TaskManager (or AIManager)
+---TODO: move it to TaskManager (or AIManager)
 ---@return boolean
 function SuperSurvivor:Task_IsPursue_SC()
 	local Enemy_Is_a_Zombie = (instanceof(self.LastEnemeySeen,"IsoZombie")) 
@@ -4093,7 +4179,11 @@ function SuperSurvivor:NPCTask_DoAttemptEntryIntoBuilding()
 		end
 	end
 end
-function SuperSurvivor:Task_IsThreaten_Verify() -- You want this function to return 'true' 
+
+--- checks if the survivor can execute a ThreatenTask
+---@deprecated this function should be moved to TaskManager or AIManager
+---@return boolean
+function SuperSurvivor:Task_IsThreaten_Verify() 
 	if (self.LastEnemeySeen ~= nil) then 
 
 		local LES_GCS = self.LastEnemeySeen:getCurrentSquare()
@@ -4114,9 +4204,12 @@ function SuperSurvivor:Task_IsThreaten_Verify() -- You want this function to ret
 		return false -- If LastEnemySeen is nil
 	end
 end
--- Function List for checking specific scenarios of NPC tasks
--- This one is for if the NPC is trying to get out or inside a building but can not
--- This **should** be the complete list of tasks that would get an npc stuck
+
+--- Function List for checking specific scenarios of NPC tasks
+--- This one is for if the NPC is trying to get out or inside a building but can not
+--- This **should** be the complete list of tasks that would get an npc stuck
+---@deprecated this function should be moved to TaskManager or AIManager
+---@return boolean
 function SuperSurvivor:NPC_TaskCheck_EnterLeaveBuilding()
 	if
 		(self:getTaskManager():getCurrentTask() ~= "Enter New Building") and			-- AttemptEntryIntoBuildingTask
@@ -4141,8 +4234,9 @@ function SuperSurvivor:NPC_TaskCheck_EnterLeaveBuilding()
 	
 end
 
--- This was built for getting away from zeds
--- This needed 'not a companion' check to keep the NPC in question not to run away when they're following main player.
+--- This was built for getting away from zeds
+--- This needed 'not a companion' check to keep the NPC in question not to run away when they're following main player.
+---@return void
 function SuperSurvivor:NPC_FleeWhileReadyingGun()
 	local Distance_AnyEnemy = getDistanceBetween(self.LastEnemeySeen,self.player)
 	local Distance_MainPlayer = getDistanceBetween(getSpecificPlayer(0),self.player)
@@ -4171,8 +4265,10 @@ function SuperSurvivor:NPC_FleeWhileReadyingGun()
 	return true
 end
 
+--- suit up a survivor with a preset suit name
+---@param SuitName string a suit name inside of SurvivorRandomSuits or add-ons
+---@return void
 function SuperSurvivor:SuitUp(SuitName)
-
 		-- reset
 		self.player:clearWornItems();
 		self.player:getInventory():clear();
@@ -4208,7 +4304,9 @@ function SuperSurvivor:SuitUp(SuitName)
 			end			
 		end
 end
--- TODO : this should be a Task 
+
+--- TODO : maybe convert it to a Task 
+---@return void
 function SuperSurvivor:CleanUp(percent)
 
 
@@ -4286,21 +4384,34 @@ end
 --- END TASKS ---
  
 --- VISION ---
+
+--- gets the amount of entities seen (zombies, player, survivors)
+---@return number
 function SuperSurvivor:getSeenCount()
 	return self.seenCount
 end
+
+--- gets the amount of entities seen (zombies, hostile humans)
+---@return number
 function SuperSurvivor:getDangerSeenCount()
 	return self.dangerSeenCount
 end
 
+--- checks if the survivor is seen an entity
+---@param character any the character to be searched (if its a zombie itll use CanSee(character))
+---@return boolean
 function SuperSurvivor:RealCanSee(character)
 	
-	if(character:isZombie()) then return (self.player:CanSee(character)) end -- normal vision for zombies (they are not quiet or sneaky)
+	if(character:isZombie()) then 
+		return (self.player:CanSee(character)) 
+	end -- normal vision for zombies (they are not quiet or sneaky)
 	
 	local visioncone = SurvivorVisionCone
-	if(character:isSneaking()) then visioncone = visioncone - 0.15 end
-	return (self.player:CanSee(character) and (self.player:getDotWithForwardDirection(character:getX(),character:getY()) + visioncone) >= 1.0 ) 						
+	if(character:isSneaking()) then 
+		visioncone = visioncone - 0.15 
+	end
 
+	return (self.player:CanSee(character) and (self.player:getDotWithForwardDirection(character:getX(),character:getY()) + visioncone) >= 1.0 ) 						
 end
 
 function SuperSurvivor:DoVision()
@@ -4370,23 +4481,27 @@ function SuperSurvivor:DoVision()
 	
 end
 
+--- checks if the survivor is on the player's screen by checking the survivor's square
+---@return boolean 
 function SuperSurvivor:isOnScreen()	
-	if(self.player:getCurrentSquare() ~= nil) and (self.player:getCurrentSquare():IsOnScreen()) then 
-		return true
-	else 
+	return (self.player:getCurrentSquare() ~= nil) and (self.player:getCurrentSquare():IsOnScreen())
+end
+
+--- checks if the survivor is in some cell and alive
+---@return boolean 
+function SuperSurvivor:isInCell()	
+	if(self.player == nil) or (self.player:getCurrentSquare() == nil) or (self:isDead()) then 
 		return false
+	else 
+		return true 
 	end	
 end
 
-function SuperSurvivor:isInCell()	
-	if(self.player == nil) or (self.player:getCurrentSquare() == nil) or (self:isDead()) then return false
-	else return true end	
-end
-
--- Come to think of it, this function could be cloned to find windows/doors if done right......
--- This function is to keep companions from being snuck upon. It's a little OP, but it's also preventing situations like
--- 'Oh I'm trying to fight a NPC I'm stuck on, oh no a zombie behind me and I could clearly hear it? Oh well...' THIS function prevents cases like THAT.
--- Also I believe since the self.seencount and other variables that 'reset to 0' is marked off, maybe helping as to why this function's working so cleverly.
+--- Come to think of it, this function could be cloned to find windows/doors if done right......
+--- This function is to keep companions from being snuck upon. It's a little OP, but it's also preventing situations like
+--- 'Oh I'm trying to fight a NPC I'm stuck on, oh no a zombie behind me and I could clearly hear it? Oh well...' THIS function prevents cases like THAT.
+--- Also I believe since the self.seencount and other variables that 'reset to 0' is marked off, maybe helping as to why this function's working so cleverly.
+---@return IsoPlayer 
 function SuperSurvivor:Companion_DoSixthSenseScan()
 
 	local atLeastThisClose = 3;
@@ -4464,10 +4579,10 @@ function SuperSurvivor:Companion_DoSixthSenseScan()
 	
 end
 
--- This function is still in testing. It's basically 'dovision' but re-functioned to find the closest hostile the npc can find, that is a human only.
--- DO *NOT* put this in update() function or anything similar. This is supposed to be exclusively to make dopursuealt work.
--- And to attempt-fix a situation where the player can walk behind the NPC mid-attack and the npc suddenly forgetting about the player.
--- Update: BE VERY CAREFUL using this. It will overwrite Dovision. This is using for bandits to keep up with the main player.
+--- DO *NOT* put this in update() function or anything similar. This is supposed to be exclusively to make dopursuealt work.
+--- And to attempt-fix a situation where the player can walk behind the NPC mid-attack and the npc suddenly forgetting about the player.
+--- Update: BE VERY CAREFUL using this. It will overwrite Dovision. This is using for bandits to keep up with the main player.
+---@return void
 function SuperSurvivor:DoHumanEntityScan()
 
 	local atLeastThisClose = 5;
@@ -4531,6 +4646,8 @@ end
 
 --- UPDATE ---
 
+--- Get the human entity fo the survivor
+---@return IsoPlayer
 function SuperSurvivor:Get()
 	return self.player
 end
@@ -4559,8 +4676,7 @@ end
 function SuperSurvivor:update()
 	
 	if(self:isDead()) then 
-		
-		return false
+		return
 	end
 	
 	self:DoVision()
@@ -4782,12 +4898,18 @@ end
 --- END HEALTH ---
 
 --- SAVEFILES --- 
+--- gets the survivor ID
+---@return number
 function SuperSurvivor:getID()
-
-	if(instanceof(self.player,"IsoPlayer")) then return self.player:getModData().ID 
-	else return 0 end
-
+	if(instanceof(self.player,"IsoPlayer")) then 
+		return self.player:getModData().ID 
+	else 
+		return 0 
+	end
 end
+--- sets the survivor ID
+---@param id number
+---@return void
 function SuperSurvivor:setID(id)
 	self.player:getModData().ID = id;
 end
@@ -4795,6 +4917,7 @@ end
 --- TODO : move these functions to SuperSurvivorManager
 
 --- deletes everything from the survivor and removes it
+---@return void
 function SuperSurvivor:delete()
 
 	self.player:getInventory():emptyIt();
@@ -4899,9 +5022,9 @@ end
 
 --- loads a survivor 
 --- It doesnt use "self" variable so it can be moved to other file 
----@param square any the square that the survivor will be loaded
----@param ID any the ID of the survivor (needs to be inside the savefiles)
----@return player returns Survivor if the file exists
+---@param square square the square that the survivor will be loaded
+---@param ID number the ID of the survivor (needs to be inside the savefiles)
+---@return IsoPlayer returns Survivor if the file exists
 function SuperSurvivor:loadPlayer(square, ID)
 	local level = SurvivorDebugEnum.Other
 	logSurvivorFunction(level,"loadPlayer")
@@ -4984,30 +5107,15 @@ function SuperSurvivor:findNearestSheetRopeSquare(down)
 	return CloseSquareSoFar
 end
 
-function SuperSurvivor:isAmmoForMe(itemType)
-
-	if(self.AmmoTypes) and (#self.AmmoTypes > 0) then		
-		for i=1, #self.AmmoTypes do		
-			if(itemType == self.AmmoTypes[i]) then return true end
-		end	
-	end
-	if(self.AmmoBoxTypes) and (#self.AmmoBoxTypes > 0) then		
-		for i=1, #self.AmmoBoxTypes do		
-			if(itemType == self.AmmoBoxTypes[i]) then return true end
-		end	
-	end
-		-- AmmoTypesBox
-	return false
-
-end
 
 --- func desc
 --- TODO : this should be moved to the find Task
----@param itemType any
----@param TypeOrCategory any
-function SuperSurvivor:FindThisNearBy(itemType, TypeOrCategory)
-				
-	if(self.GoFindThisCounter > 0) then return nil end
+---@param itemType string
+---@param TypeOrCategory string
+function SuperSurvivor:FindThisNearBy(itemType, TypeOrCategory)		
+	if(self.GoFindThisCounter > 0) then 
+		return nil 
+	end
 	
 	self.GoFindThisCounter = 10;
 	local sq, itemtoReturn;
@@ -5052,13 +5160,7 @@ function SuperSurvivor:FindThisNearBy(itemType, TypeOrCategory)
 						
 						if(sq:getZ() ~= self.player:getZ()) then tempDistance = tempDistance + 13 end
 						
-						local FindCatResult
-						--if(itemType == "Food") then 
-						--	FindCatResult = FindAndReturnBestFood(container)
-						--else 
-							FindCatResult = FindItemByCategory(container, itemType, self) 
-						--end
-						--print("FindCatResult: " .. tostring(FindCatResult))
+						local FindCatResult = FindItemByCategory(container, itemType, self)
 						
 						if(tempDistance<closestSoFar) 
 							and (
@@ -5155,18 +5257,6 @@ function SuperSurvivor:FindThisNearBy(itemType, TypeOrCategory)
 	end
 	return itemtoReturn
 			
-end
-
-function SuperSurvivor:ensureInInv(item)
-
-	if(self:getBag():contains(item)) then self:getBag():Remove(item) end
-	if(item:getWorldItem() ~= nil) then
-		item:getWorldItem():removeFromSquare()
-		item:setWorldItem(nil)
-	end
-	if(not self:Get():getInventory():contains(item)) then self:Get():getInventory():AddItem(item) end
-
-	return item
 end
 
 ------------------armor mod functions-------------------

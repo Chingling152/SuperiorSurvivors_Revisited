@@ -227,7 +227,9 @@
 --- END GROUPS --- 
 
 --- MISC. ---
----@alias	gender "GirlNames"|"BoyNames"
+---@alias	gender string
+---| "GirlNames"
+---| "BoyNames"
 --- END MISC. ---
 
 --- TASKS ---
