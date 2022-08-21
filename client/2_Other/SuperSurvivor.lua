@@ -1884,7 +1884,7 @@ end
 function SuperSurvivor:hasRoomInBag()
 	local playerBag = self:getBag()
 	
-	return playerBag:getCapacityWeight() >= (playerBag:getMaxWeight() * 0.9)
+	return playerBag:getCapacityWeight() < (playerBag:getMaxWeight() * 0.9)
 end
 
 --- checks if there is any space inside survivor's inventory for the item
@@ -1892,11 +1892,7 @@ end
 function SuperSurvivor:hasRoomInBagFor(item)
 	local playerBag = self:getBag()
 	
-	if(playerBag:getCapacityWeight() + item:getWeight() >= (playerBag:getMaxWeight() * 0.9)) then 
-		return false
-	else 
-		return true 
-	end
+	return (playerBag:getCapacityWeight() + item:getWeight()) < (playerBag:getMaxWeight() * 0.9)
 end
 
 --- Returns the amount of an item of type that the survivor holds
