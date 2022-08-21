@@ -1,6 +1,7 @@
 --this file has methods related to looting
 
 --- DEBUG ---
+
 local enableDebugLoot = false
 
 local function debugLoot(text)
@@ -121,8 +122,8 @@ function FindAndReturnWeapon(container)
 end
 
 --- gets the best weapon inside of a 'container'
----@param container any container to be searched
----@return any returns the best weapon inside the container or nil if not found
+---@param container container container to be searched
+---@return weapon returns the best weapon inside the container or nil if not found
 function FindAndReturnBestWeapon(container)
 	
 	if(container == nil) then 

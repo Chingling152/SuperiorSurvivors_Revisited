@@ -606,7 +606,7 @@ function survivorMenu(context,o)
 		end		
 		if (o:getModData().isHostile ~= true) and ( (SS:getTaskManager():getCurrentTask() == "Listen") or (SS:getTaskManager():getCurrentTask() == "Take Gift") or (getDistanceBetween(SS:Get(),getSpecificPlayer(0)) < 2) ) then
 			local selectOption = submenu:addOption(		getContextMenuText("TalkOption"), nil, TalkToSurvivor, SS, nil);
-			local toolTip = makeToolTip(selectOption,	getContextMenuText("TalkOption"), getContextMenuText("TalkOption_Desc"));
+			local toolTip = makeToolTip(selectOption,	getContextMenuText("TalkOption"), getContextMenuText("TalkDesc"));
 			if((SS:getGroupID() ~= SSM:Get(0):getGroupID()) or SS:getGroupID() == nil) then -- not in group
 				if (o:getModData().NoParty ~= true) then
 					submenu:addOption(getContextMenuText("InviteToGroup"), nil, InviteToParty, o, nil);

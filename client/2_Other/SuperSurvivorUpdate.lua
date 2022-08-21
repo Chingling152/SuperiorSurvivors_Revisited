@@ -194,13 +194,13 @@ local function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
     local fakehit = false
 
     if (SSV == nil) or (SSW == nil) then
-				if(SSV == nil)then	
-					log("victim is nil")
-    		end
+		if(SSV == nil)then	
+            log("victim is nil")
+    	end
+        if(SSW == nil)then	
+            log("wielder is nil")
+    	end
 
-				if(SSW == nil)then	
-					log("wielder is nil")
-    		end
         logFunction("SuperSurvivorPVPHandle")
         return
     end
@@ -212,7 +212,7 @@ local function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
             -- print("cant touch this")
             fakehit = true
             victim:setAvoidDamage(true)
-            log("FAKE HIT")
+            log("FAKE HIT : same group")
         end
     elseif (victim.setNoDamage ~= nil) then
         if (SSW:isInGroup(victim)) then
@@ -220,7 +220,7 @@ local function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
             -- print("cant touch this2")
             fakehit = true
             victim:setNoDamage(true)
-            log("FAKE HIT")
+            log("FAKE HIT : no damage")
         else
             victim:setNoDamage(false)
             log("REAL HIT")
