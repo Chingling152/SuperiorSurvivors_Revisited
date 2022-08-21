@@ -554,12 +554,12 @@ function SuperSurvivor:hasWater()
 	return (self:getWater() ~= nil)
 end
 
---- Triggers the ISTakeWaterAction task
---- TODO: move to TaskManager ? maybe?
+--- Triggers the ISTakeWaterAction task if the survivor is next to a water source object
+--- TODO: move to TaskManager? maybe AIManager?
 ---@param waterObject worldobject
 ---@return void
 function SuperSurvivor:DrinkFromObject(waterObject) 
-	self:Speak(getActionText("Drinking"))
+	self:RoleplaySpeak("*" .. getActionText("Drinking") .. "*")
 	if not waterObject:getSquare() or not luautils.walkAdj(self.player, waterObject:getSquare()) then
 		return
 	end
