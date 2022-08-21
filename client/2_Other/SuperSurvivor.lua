@@ -1963,6 +1963,28 @@ function SuperSurvivor:ensureInInv(item)
 
 	return item
 end
+
+--- gets all clothing, bags and armors equiped by the survivor
+---@return table a list with all clothing equiped
+function SuperSurvivor:getUnEquipedArmors()
+
+	local armors = {}
+	local inv = self.player:getInventory()
+	local items = inv:getItems()
+	
+	for i=1, items:size()-1 do
+		local item = items:get(i)
+		--if item ~= nil then print ("checking: "..tostring(item:getDisplayName()) .. "/" .. tostring(item:getCategory()) .. "/" .. tostring(item:isEquipped())) end
+		if item ~= nil and ((item:getCategory() == "Clothing") or (item:getCategory() == "Container" and item:getWeight() > 0) ) and item:isEquipped() == false then 
+			table.insert(armors,item) 
+			--print("added "..item:getDisplayName() .. " to table")
+			--getSpecificPlayer(0):Say("added "..item:getDisplayName() .. " to table")
+		end
+	end
+
+	return armors
+end
+
 --- END INVENTORY ---
 
 --- LOOTING ---
@@ -3532,6 +3554,189 @@ function SuperSurvivor:NPC_ForceFindNearestBuilding()
 		self.TargetBuilding = self.TargetSquare:getRoom():getBuilding() 
 	end
 end
+
+--- finds the nearest square 
+---@param down boolean checks if the sheetrop is for getting down
+---@return square
+function SuperSurvivor:findNearestSheetRopeSquare(down)
+	local sq, CloseSquareSoFar;
+		local range = 20
+		local minx=math.floor(self.player:getX() - range);
+		local maxx=math.floor(self.player:getX() + range);
+		local miny=math.floor(self.player:getY() - range);
+		local maxy=math.floor(self.player:getY() + range);
+		local closestSoFar = 999;
+		
+		for x=minx, maxx do
+			for y=miny, maxy do
+				sq = getCell():getGridSquare(x,y,self.player:getZ());
+				if(sq ~= nil) then
+					local distance = getDistanceBetween(sq,self.player)
+				
+					if down and (distance < closestSoFar) and self.player:canClimbDownSheetRope(sq) then
+						closestSoFar = distance
+						CloseSquareSoFar = sq
+					elseif not down and (distance < closestSoFar) and self.player:canClimbSheetRope(sq) then
+						closestSoFar = distance
+						CloseSquareSoFar = sq
+					end
+				
+				end
+			end
+		end
+		
+	return CloseSquareSoFar
+end
+
+--- Finds a item for type or category
+--- TODO : this should be moved to the find Task
+---@param itemType string
+---@param TypeOrCategory string
+---@return item
+function SuperSurvivor:FindThisNearBy(itemType, TypeOrCategory)		
+	if(self.GoFindThisCounter > 0) then 
+		return nil 
+	end
+	
+	self.GoFindThisCounter = 10;
+	local sq, itemtoReturn;
+	local range = 30
+	--local minx=math.floor(self.player:getX() - range);
+	--local maxx=math.floor(self.player:getX() + range);
+	--local miny=math.floor(self.player:getY() - range);
+	--local maxy=math.floor(self.player:getY() + range);
+	local closestSoFar = 999;
+	if(self.player:getZ() > 0) or (getCell():getGridSquare(self.player:getX(),self.player:getY(),self.player:getZ() + 1) ~= nil) then
+		zhigh = self.player:getZ() + 1
+	else
+		zhigh = 0
+	end
+	
+	--print("find " .. itemType)
+	for z=0, zhigh do
+		--for x=minx, maxx do
+		--	for y=miny, maxy do
+		local spiral = SpiralSearch:new(self.player:getX(), self.player:getY(), range)
+		local x, y
+		--print(spiral:forMax())
+
+		for i = spiral:forMax(), 0, -1 do
+					
+			x = spiral:getX()
+			y = spiral:getY()
+			--print(x .. ", " .. y)
+
+			sq = getCell():getGridSquare(x,y,z);
+			if(sq ~= nil) then
+				local tempDistance = 0--getDistanceBetween(sq,self.player)
+				if (self.player:getZ() ~= z) then tempDistance = tempDistance + 10 end
+				local items = sq:getObjects()
+				-- check containers in square
+				--print(items:size() .. " objects")
+				for j=0, items:size()-1 do
+					--print(tostring(items:get(j):getObjectName())..":"..tostring(items:get(j):getContainer())..","..tostring(items:get(j):hasWater()))
+					if(items:get(j):getContainer() ~= nil) then
+						local container = items:get(j):getContainer()
+						--print("container with " ..tostring(container:getCapacity()))
+						
+						if(sq:getZ() ~= self.player:getZ()) then tempDistance = tempDistance + 13 end
+						
+						local FindCatResult = FindItemByCategory(container, itemType, self)
+						
+						if(tempDistance<closestSoFar) 
+							and (
+								(TypeOrCategory == "Category")
+								and (FindCatResult ~= nil)
+							) or (
+								(TypeOrCategory == "Type")
+								and (container:FindAndReturn(itemType)) ~= nil
+							) then
+							
+							if (TypeOrCategory == "Category")  then
+								itemtoReturn = FindCatResult
+							else
+								itemtoReturn = container:FindAndReturn(itemType)
+							end
+
+							if itemtoReturn:isBroken() then
+								itemtoReturn = nil
+							else
+								closestSoFar = tempDistance
+							end
+							
+						end	
+					elseif(itemType == "Water") and (items:get(j):hasWater()) and (tempDistance<closestSoFar) then
+						itemtoReturn = items:get(j)
+						closestSoFar = tempDistance
+					elseif(itemType == "WashWater")
+							and (items:get(j):hasWater()) 
+							and (items:get(j):getWaterAmount() > 5000 or items:get(j):isTaintedWater())
+							and (tempDistance<closestSoFar) then
+						itemtoReturn = items:get(j)
+						closestSoFar = tempDistance
+					end
+				end	
+				
+				-- check floor
+				if itemtoReturn ~= nil then
+					self.TargetSquare = sq
+				else
+					if (itemType == "Food") then
+						local item = FindAndReturnBestFoodOnFloor(sq, self)
+
+						if (item ~= nil) then
+							itemtoReturn = item
+							closestSoFar = tempDistance
+							self.TargetSquare = sq
+						end
+					else
+						items = sq:getWorldObjects()
+						--print("Checking " .. tostring(items:size()) .. " world objects.")
+						for j=0, items:size()-1 do
+							if(items:get(j):getItem()) then
+								local item = items:get(j):getItem()
+								--print(tostring(item:getType()).."("..tostring(item:isBroken()).."/"..tostring(item:getCondition()).."):"..itemType)
+								if (tempDistance < closestSoFar) and 
+								(item ~= nil) and 
+								(not item:isBroken()) and
+								(
+									((TypeOrCategory == "Category") and (hasCategory(item,itemType))) or 
+									((TypeOrCategory == "Type") and (tostring(item:getType()) == itemType or tostring(item:getName()) == itemType))
+								) then
+									--print("hit "..tempDistance)
+									itemtoReturn = item
+									closestSoFar = tempDistance
+									self.TargetSquare = sq
+								end
+							end
+						end
+					end
+				end
+			end
+
+			if (self.TargetSquare ~= nil and itemtoReturn ~= nil) then
+				break
+			end
+
+			spiral:next()
+			
+		end
+		--	end						
+		--end
+
+		if (self.TargetSquare ~= nil and itemtoReturn ~= nil) then
+			break
+		end
+	end
+		
+	if(self.TargetSquare ~= nil and itemtoReturn ~= nil) and (self.TargetSquare:getRoom()) and (self.TargetSquare:getRoom():getBuilding()) then 
+		self.TargetBuilding = self.TargetSquare:getRoom():getBuilding() 
+		--print("target building set")
+	end
+	return itemtoReturn
+			
+end
+
 --- END CONTEXT ---
 
 --- RELATIONSHIP ---
@@ -4659,6 +4864,8 @@ function SuperSurvivor:Wait(ticks)
 	self.WaitTicks = ticks
 end
 
+--- checks if the survivor wait ticks
+---@return boolean
 function SuperSurvivor:updateTime()
 		self:renderName()
 		self.Reducer = self.Reducer + 1 
@@ -4670,9 +4877,14 @@ function SuperSurvivor:updateTime()
 			self.WaitTicks = self.WaitTicks - 1
 			return false
 		end
-	else return false end
+	else 
+		return false 
+	end
 end
 
+--- main update method of the survivor
+--- it runs code on every tick
+---@return void
 function SuperSurvivor:update()
 	
 	if(self:isDead()) then 
@@ -4776,8 +4988,10 @@ function SuperSurvivor:update()
 	end
 end
 
+--- update method of the survivor
+--- it runs code on every player update
+---@return void 
 function SuperSurvivor:PlayerUpdate()
-
 	if(not self.player:isLocalPlayer()) then
 	
 		if(self.TriggerHeldDown) and (self:canAttack()) and (not (self:hasGun())) then -- simulate automatic weapon fire
@@ -4792,23 +5006,24 @@ function SuperSurvivor:PlayerUpdate()
 			local ls = self.player:getLastSquare()
 			local tempdoor = ls:getDoorTo(cs);
 			if(tempdoor ~= nil and tempdoor:IsOpen() ) then
-				 tempdoor:ToggleDoor(self.player);
-				
+				tempdoor:ToggleDoor(self.player);
 			end		
 		end
 		
-		self:WalkToUpdate(self.player)
-		
+		self:WalkToUpdate(self.player)		
 	end
-	
 end
 
+--- Death method of the survivor
+--- it runs code on death of the survivor
+---@return void
 function SuperSurvivor:OnDeath()
 	print(self:getName() .. " has died")
 
 	local ID = self:getID()
 	SSM:OnDeath(ID)
 	
+	--TODO: move this part to SSM:OnDeath
 	SurvivorLocX[ID] = nil
 	SurvivorLocY[ID] = nil
 	SurvivorLocZ[ID] = nil
@@ -4820,9 +5035,11 @@ function SuperSurvivor:OnDeath()
 	end
 end
 
+--- Increases a perk level when the survivor has XP enough
+--- it runs on every update (ticks)
+---@return void
 function SuperSurvivor:ManageXP()
-
-	local currentLevel
+	local currentLevel = 0
 	local currentXP,XPforNextLevel
 	local ThePerk
 	for i=1, #SurvivorPerks do
@@ -4835,8 +5052,7 @@ function SuperSurvivor:ManageXP()
 			local display_perk = PerkFactory.getPerkName(Perks.FromString(SurvivorPerks[i]))
 			--print(tostring(self:getName())..tostring(display_perk).." - "..tostring(currentXP).."/"..tostring(XPforNextLevel))
 			if(currentXP >= XPforNextLevel) and (currentLevel < 10) then 
-				self.player:LevelPerk(ThePerk)
-				
+				self.player:LevelPerk(ThePerk)		
 				
 				if( string.match(SurvivorPerks[i], "Blade") ) or ( SurvivorPerks[i] == "Axe" ) then
 					display_perk = getText("IGUI_perks_Blade") .. " " .. display_perk
@@ -4849,15 +5065,6 @@ function SuperSurvivor:ManageXP()
 			--if(SurvivorPerks[i] == "Aiming") then self.player:Say(tostring(currentXP).."/"..tostring(XPforNextLevel)) end
 		end
 	end
-
-end
-
-function SuperSurvivor:reload()
-	local cs = self.player:getCurrentSquare()
-	local id = self:getID()
-	self:delete()
-	self.player = self:spawnPlayer(cs,nil)
-	self:loadPlayer(cs,id)
 end
 --- END UPDATE ---
 
@@ -4879,25 +5086,26 @@ function SuperSurvivor:HasMultipleInjury()
 	return (total > 1)
 
 end
-function SuperSurvivor:HasInjury()
 
+--- checks if the survivor has any injury in any body part
+--- this function does not shows what part of the body is injuried
+---@return boolean
+function SuperSurvivor:HasInjury()
 	local bodyparts = self.player:getBodyDamage():getBodyParts()
 	
 	for i=0, bodyparts:size()-1 do
-
 		local bp = bodyparts:get(i)
 		if(bp:HasInjury()) and (bp:bandaged() == false) then
 			return true
 		end
-		
 	end
 	
 	return false
-
 end
 --- END HEALTH ---
 
 --- SAVEFILES --- 
+
 --- gets the survivor ID
 ---@return number
 function SuperSurvivor:getID()
@@ -4907,6 +5115,7 @@ function SuperSurvivor:getID()
 		return 0 
 	end
 end
+
 --- sets the survivor ID
 ---@param id number
 ---@return void
@@ -4914,9 +5123,9 @@ function SuperSurvivor:setID(id)
 	self.player:getModData().ID = id;
 end
 
---- TODO : move these functions to SuperSurvivorManager
 
 --- deletes everything from the survivor and removes it
+--- TODO : move this to SuperSurvivorManager
 ---@return void
 function SuperSurvivor:delete()
 
@@ -4933,6 +5142,9 @@ function SuperSurvivor:delete()
 	
 end
 
+--- Saves the survivor position locally
+--- TODO : move this to SuperSurvivorManager
+---@return void
 function SuperSurvivor:SaveSurvivorOnMap()
 	local level = SurvivorDebugEnum.Other
 	logSurvivorFunction(level,"SaveSurvivorOnMap")
@@ -4991,6 +5203,9 @@ function SuperSurvivor:SaveSurvivorOnMap()
 	logSurvivorFunction(level,"SaveSurvivorOnMap")
 end
 
+--- creates a savefile for the survivor 
+--- TODO : move this to SuperSurvivorManager
+---@return void
 function SuperSurvivor:SaveSurvivor()
 	local level = SurvivorDebugEnum.Other
 	logSurvivorFunction(level,"SaveSurvivor")
@@ -5022,6 +5237,7 @@ end
 
 --- loads a survivor 
 --- It doesnt use "self" variable so it can be moved to other file 
+--- TODO : move this to SuperSurvivorManager
 ---@param square square the square that the survivor will be loaded
 ---@param ID number the ID of the survivor (needs to be inside the savefiles)
 ---@return IsoPlayer returns Survivor if the file exists
@@ -5058,6 +5274,7 @@ function SuperSurvivor:loadPlayer(square, ID)
 end
 
 --- respawn the survivor with the same state, items. 
+--- TODO : move this to SuperSurvivorManager
 ---@return void
 function SuperSurvivor:reload()
 	local level = SurvivorDebugEnum.Spawn
@@ -5075,207 +5292,3 @@ function SuperSurvivor:reload()
 	logSurvivorFunction(level, "reload")
 end
 --- END SAVEFILES ---
-
-function SuperSurvivor:findNearestSheetRopeSquare(down)
-
-	local sq, CloseSquareSoFar;
-		local range = 20
-		local minx=math.floor(self.player:getX() - range);
-		local maxx=math.floor(self.player:getX() + range);
-		local miny=math.floor(self.player:getY() - range);
-		local maxy=math.floor(self.player:getY() + range);
-		local closestSoFar = 999;
-		
-		for x=minx, maxx do
-			for y=miny, maxy do
-				sq = getCell():getGridSquare(x,y,self.player:getZ());
-				if(sq ~= nil) then
-					local distance = getDistanceBetween(sq,self.player)
-				
-					if down and (distance < closestSoFar) and self.player:canClimbDownSheetRope(sq) then
-						closestSoFar = distance
-						CloseSquareSoFar = sq
-					elseif not down and (distance < closestSoFar) and self.player:canClimbSheetRope(sq) then
-						closestSoFar = distance
-						CloseSquareSoFar = sq
-					end
-				
-				end
-			end
-		end
-		
-	return CloseSquareSoFar
-end
-
-
---- func desc
---- TODO : this should be moved to the find Task
----@param itemType string
----@param TypeOrCategory string
-function SuperSurvivor:FindThisNearBy(itemType, TypeOrCategory)		
-	if(self.GoFindThisCounter > 0) then 
-		return nil 
-	end
-	
-	self.GoFindThisCounter = 10;
-	local sq, itemtoReturn;
-	local range = 30
-	--local minx=math.floor(self.player:getX() - range);
-	--local maxx=math.floor(self.player:getX() + range);
-	--local miny=math.floor(self.player:getY() - range);
-	--local maxy=math.floor(self.player:getY() + range);
-	local closestSoFar = 999;
-	if(self.player:getZ() > 0) or (getCell():getGridSquare(self.player:getX(),self.player:getY(),self.player:getZ() + 1) ~= nil) then
-		zhigh = self.player:getZ() + 1
-	else
-		zhigh = 0
-	end
-	
-	--print("find " .. itemType)
-	for z=0, zhigh do
-		--for x=minx, maxx do
-		--	for y=miny, maxy do
-		local spiral = SpiralSearch:new(self.player:getX(), self.player:getY(), range)
-		local x, y
-		--print(spiral:forMax())
-
-		for i = spiral:forMax(), 0, -1 do
-					
-			x = spiral:getX()
-			y = spiral:getY()
-			--print(x .. ", " .. y)
-
-			sq = getCell():getGridSquare(x,y,z);
-			if(sq ~= nil) then
-				local tempDistance = 0--getDistanceBetween(sq,self.player)
-				if (self.player:getZ() ~= z) then tempDistance = tempDistance + 10 end
-				local items = sq:getObjects()
-				-- check containers in square
-				--print(items:size() .. " objects")
-				for j=0, items:size()-1 do
-					--print(tostring(items:get(j):getObjectName())..":"..tostring(items:get(j):getContainer())..","..tostring(items:get(j):hasWater()))
-					if(items:get(j):getContainer() ~= nil) then
-						local container = items:get(j):getContainer()
-						--print("container with " ..tostring(container:getCapacity()))
-						
-						if(sq:getZ() ~= self.player:getZ()) then tempDistance = tempDistance + 13 end
-						
-						local FindCatResult = FindItemByCategory(container, itemType, self)
-						
-						if(tempDistance<closestSoFar) 
-							and (
-								(TypeOrCategory == "Category")
-								and (FindCatResult ~= nil)
-							) or (
-								(TypeOrCategory == "Type")
-								and (container:FindAndReturn(itemType)) ~= nil
-							) then
-							
-							if (TypeOrCategory == "Category")  then
-								itemtoReturn = FindCatResult
-							else
-								itemtoReturn = container:FindAndReturn(itemType)
-							end
-
-							if itemtoReturn:isBroken() then
-								itemtoReturn = nil
-							else
-								closestSoFar = tempDistance
-							end
-							
-						end	
-					elseif(itemType == "Water") and (items:get(j):hasWater()) and (tempDistance<closestSoFar) then
-						itemtoReturn = items:get(j)
-						closestSoFar = tempDistance
-					elseif(itemType == "WashWater")
-							and (items:get(j):hasWater()) 
-							and (items:get(j):getWaterAmount() > 5000 or items:get(j):isTaintedWater())
-							and (tempDistance<closestSoFar) then
-						itemtoReturn = items:get(j)
-						closestSoFar = tempDistance
-					end
-				end	
-				
-				-- check floor
-				if itemtoReturn ~= nil then
-					self.TargetSquare = sq
-				else
-					if (itemType == "Food") then
-						local item = FindAndReturnBestFoodOnFloor(sq, self)
-
-						if (item ~= nil) then
-							itemtoReturn = item
-							closestSoFar = tempDistance
-							self.TargetSquare = sq
-						end
-					else
-						items = sq:getWorldObjects()
-						--print("Checking " .. tostring(items:size()) .. " world objects.")
-						for j=0, items:size()-1 do
-							if(items:get(j):getItem()) then
-								local item = items:get(j):getItem()
-								--print(tostring(item:getType()).."("..tostring(item:isBroken()).."/"..tostring(item:getCondition()).."):"..itemType)
-								if (tempDistance < closestSoFar) and 
-								(item ~= nil) and 
-								(not item:isBroken()) and
-								(
-									((TypeOrCategory == "Category") and (hasCategory(item,itemType))) or 
-									((TypeOrCategory == "Type") and (tostring(item:getType()) == itemType or tostring(item:getName()) == itemType))
-								) then
-									--print("hit "..tempDistance)
-									itemtoReturn = item
-									closestSoFar = tempDistance
-									self.TargetSquare = sq
-								end
-							end
-						end
-					end
-				end
-			
-				
-				
-			end
-
-			if (self.TargetSquare ~= nil and itemtoReturn ~= nil) then
-				break
-			end
-
-			spiral:next()
-			
-		end
-		--	end						
-		--end
-
-		if (self.TargetSquare ~= nil and itemtoReturn ~= nil) then
-			break
-		end
-	end
-		
-	if(self.TargetSquare ~= nil and itemtoReturn ~= nil) and (self.TargetSquare:getRoom()) and (self.TargetSquare:getRoom():getBuilding()) then 
-		self.TargetBuilding = self.TargetSquare:getRoom():getBuilding() 
-		--print("target building set")
-	end
-	return itemtoReturn
-			
-end
-
-------------------armor mod functions-------------------
-
-function SuperSurvivor:getUnEquipedArmors()
-
-	local armors = {}
-	local inv = self.player:getInventory()
-	local items = inv:getItems()
-	
-	for i=1, items:size()-1 do
-		local item = items:get(i)
-		--if item ~= nil then print ("checking: "..tostring(item:getDisplayName()) .. "/" .. tostring(item:getCategory()) .. "/" .. tostring(item:isEquipped())) end
-		if item ~= nil and ((item:getCategory() == "Clothing") or (item:getCategory() == "Container" and item:getWeight() > 0) ) and item:isEquipped() == false then 
-			table.insert(armors,item) 
-			--print("added "..item:getDisplayName() .. " to table")
-			--getSpecificPlayer(0):Say("added "..item:getDisplayName() .. " to table")
-		end
-	end
-
-	return armors
-end
