@@ -2,25 +2,7 @@
 --- this file doenst have any code
 
 --- SUPER SURVIVOR ---
----@class TextDrawObject
----@field setAllowAnyImage fun(set: boolean):void 
----@field setDefaultFont fun(font: any):void 
----@field setDefaultColors fun(r: number, g: number, b: number, a: number):void 
----@field ReadString fun(text:string):void 
-
----@class playerStats
----@field getHunger fun(): number
----@field getThirst fun(): number
-
----@class IsoPlayer
----@field isDead fun(): boolean
----@field getStats fun(): playerStats
----@field getPerkLevel fun(perk: string): number
----@field getCurrentSquare fun(): square 
----@field getModData fun(): modData 
----@field getInventory fun() : inventory
-
----@class modData
+---@class modData all mod data from SuperiorSurvivors mod
 ---@field ID number the id of the survivor
 ---@field Name string the name of the survivor
 ---@field NameRaw string
@@ -76,7 +58,7 @@
 ---| '"Farmer"'
 
 ---@class SuperSurvivor
----@field GroupRole groupRole
+---@field GroupRole GroupRole
 ---@field SquareContainerSquareLooteds table
 ---@field SquaresExplored table 
 ---@field AttackRange number 
@@ -91,75 +73,7 @@
 
 --- END SUPER SURVIVOR ---
 
---- BUILDINGS ---
-
----@class buildingdef
----@field getX fun(): number	
----@field getY fun(): number
----@field getZ fun(): number
----@field getH fun(): number
----@field getW fun(): number
-
----@class room
----@field getBuilding fun(): building
-
----@class building
----@field getDef fun(): buildingdef
-
---- END BUILDINGS ---
-
---- SQUARES ---
----@class worldobject
----@field getObjectName fun(): string
----@field getSquare fun(): square
-
----@class square 
----@field getX fun(): number
----@field getY fun(): number
----@field getZ fun(): number
----@field isFree fun(isFree: boolean): boolean
----@field isOutside fun(): boolean
----@field getRoom fun(): room
-
---- END SQUARES ---
-
 --- ITEMS ---
----@class container
----@field FindAndReturnCategory fun(category:string): item
----@field getItems fun(): item[]
-
----@class inventory:container
-
----@class item
----@field getDisplayName fun(): string
----@field getCategory fun(): string
----@field getType fun(): string
----@field getWeight fun(): number
-
----@class food:item
----@field getFoodType fun(): foodType
----@field getPoisonPower fun(): number
----@field getHungerChange fun(): number
----@field getUnhappyChange fun(): number
----@field getBoredomChange fun(): number
----@field getHungerChange fun(): number
----@field isAlcoholic fun(): boolean
----@field isIsCookable fun(): boolean
----@field isCooked fun(): boolean
----@field isbDangerousUncooked fun(): boolean
----@field isSpice fun(): boolean
----@field isFresh fun(): boolean
----@field IsRotten fun(): boolean
-
----@class water:item
----@field isWaterSource fun(): boolean
-
----@class weapon:item
----@field getMinDamage fun(): number
----@field getMaxDamage fun(): number
----@field getAmmoType fun(): string
----@field getType fun(): string
----@field isAimedFirearm fun(): boolean
 
 ---@alias itemCategory string
 ---| '"Food"'
@@ -195,7 +109,7 @@
 --- END ITEMS ---
 
 --- GROUPS --- 
----@alias groupRole string
+---@alias GroupRole string
 ---|'"Worker"'
 ---|'"Companion"'
 ---|'"Dustman"'
@@ -324,5 +238,3 @@
 ---@class WashSelfTask:Task
 
 --- END TASKS ---
-
--- TODO : remove zomboid api docs (modData, IsoPlayer, inventory, userName)

@@ -163,7 +163,7 @@ function kvtableload( fileName )
 end
 
 --- saves a table into a file
----@param tbl table a table with data
+---@param fileTable table a table with data
 ---@param fileName string the name of the file to be created
 function kvtablesave( fileTable, fileName )
 

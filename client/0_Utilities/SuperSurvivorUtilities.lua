@@ -148,7 +148,7 @@ function makeToolTip(option,name,desc)
 end
 
 --- gets the square where the mouse is empty
----@return any returns the a square
+---@return IsoGridSquare returns the square where the mouse is pointing
 function getMouseSquare()
 	local sw = (128 / getCore():getZoom(0));
 	local sh = (64 / getCore():getZoom(0));

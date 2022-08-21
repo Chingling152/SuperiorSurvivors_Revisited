@@ -9,6 +9,7 @@ local debugConfigs = {
 
 --- default log method, only logs when is in debug mode
 ---@param ... table any one or more texts (separated by commas) to be written in console.txt
+---@return void
 function log(...)
   if debugConfigs.enabled then
     local args = {...}

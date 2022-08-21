@@ -10,7 +10,7 @@ local SurvivorVisionCone = 0.90
 
 --- Spawns a new survivor
 ---@param isFemale boolean
----@param square square
+---@param square IsoGridSquare
 ---@return SuperSurvivor
 function SuperSurvivor:new(isFemale,square)
 	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"new")
@@ -139,8 +139,8 @@ function SuperSurvivor:new(isFemale,square)
 end
 
 --- Spawns a new survivor from a load file
----@param ID any
----@param square square
+---@param ID number
+---@param square IsoGridSquare
 ---@return SuperSurvivor
 function SuperSurvivor:newLoad(ID,square)
 	logSurvivorFunction(SurvivorDebugEnum.Spawn ,"newLoad")
@@ -288,8 +288,8 @@ function SuperSurvivor:newSet(player)
 	return o
 end
 
---- func desc
----@param square any
+--- spawns the survivos in a square with random skills and name
+---@param square IsoGridSquare
 ---@param isFemale boolean
 ---@return IsoPlayer
 function SuperSurvivor:spawnPlayer(square, isFemale)
@@ -310,7 +310,7 @@ function SuperSurvivor:spawnPlayer(square, isFemale)
 
 	local Buddy = IsoPlayer.new(getWorld():getCell(),BuddyDesc,square:getX(),square:getY(),Z)
 	logSurvivorPosition(Buddy)
-	
+
 	Buddy:setSceneCulled(false)
 	Buddy:setBlockMovement(true)
 	Buddy:setNPC(true);
@@ -515,7 +515,7 @@ function SuperSurvivor:getFilth()
 end
 
 --- Gets food from a survivor's inventory or bag
----@return food returns the best food item found or nil if has nothing inside the survivor inventory
+---@return Food returns the best food item found or nil if has nothing inside the survivor inventory
 function SuperSurvivor:getFood()	
 	local inv = self.player:getInventory()
 	local bag = self:getBag()
@@ -535,7 +535,7 @@ function SuperSurvivor:hasFood()
 end
 
 --- Gets water from a survivor's inventory or bag
----@return water returns any water item found or nil if has nothing inside the survivor inventory
+---@return Food returns any water item found or nil if has nothing inside the survivor inventory
 function SuperSurvivor:getWater()	
 	local inv = self.player:getInventory()
 	local bag = self:getBag()
@@ -556,7 +556,7 @@ end
 
 --- Triggers the ISTakeWaterAction task if the survivor is next to a water source object
 --- TODO: move to TaskManager? maybe AIManager?
----@param waterObject worldobject
+---@param waterObject IsoObject
 ---@return void
 function SuperSurvivor:DrinkFromObject(waterObject) 
 	self:RoleplaySpeak("*" .. getActionText("Drinking") .. "*")
@@ -572,12 +572,12 @@ end
 
 --- BASES ---
 --- Sets the base building
----@param building building
+---@param building IsoBuilding
 function SuperSurvivor:setBaseBuilding(building)	
 	self.BaseBuilding = building
 end
 --- gets the base building
----@return building
+---@return IsoBuilding
 function SuperSurvivor:getBaseBuilding()	
 	return self.BaseBuilding
 end
@@ -597,7 +597,7 @@ function SuperSurvivor:isInBase()
 end
 
 --- gets the center square of the group's base
----@return square returns the center square or nil if the group is nil
+---@return IsoGridSquare returns the center square or nil if the group is nil
 function SuperSurvivor:getBaseCenter()
 	if(self:getGroupID() == nil) then 
 		return nil
@@ -611,7 +611,7 @@ function SuperSurvivor:getBaseCenter()
 end
 
 --- Checks if the current building
----@param building building
+---@param building IsoBuilding
 function SuperSurvivor:isTargetBuildingClaimed(building)
 	if(SafeBase) then 
 		local tempsquare = getRandomBuildingSquare(building)
@@ -636,7 +636,7 @@ function SuperSurvivor:setGroupRole(toValue) -- todo: Maybe recieve strings like
 end
 
 --- gets the group role of the survivor
----@return groupRole
+---@return GroupRole
 function SuperSurvivor:getGroupRole()
 	return self.player:getModData().GroupRole
 end
@@ -687,7 +687,7 @@ end
 
 --- checks if other survivor belongs to the current survivors group
 --- TODO : change name to "isInMyGroup"
----@param thisGuy table any survivor
+---@param thisGuy SuperSurvivor any survivor
 ---@return boolean 
 function SuperSurvivor:isInGroup(thisGuy) 
 	if(self:getGroupID() == nil) then 
@@ -730,7 +730,7 @@ function SuperSurvivor:getZ()
 	return self.player:getZ()
 end
 --- gets the current square
----@return square
+---@return IsoGridSquare
 function SuperSurvivor:getCurrentSquare()
 	return self.player:getCurrentSquare()
 end
@@ -1309,7 +1309,7 @@ function SuperSurvivor:CheckForIfStuck()
 end
 
 --- increases the walk attempts to a square
----@param sq square
+---@param sq IsoGridSquare
 ---@return void
 function SuperSurvivor:WalkToAttempt(sq)
 	if(sq) then
@@ -1323,7 +1323,7 @@ function SuperSurvivor:WalkToAttempt(sq)
 end
 
 --- sets the walk attempts to a square
----@param sq square
+---@param sq IsoGridSquare
 ---@param toThis number
 ---@return void
 function SuperSurvivor:setWalkToAttempt(sq,toThis)
@@ -1334,7 +1334,7 @@ function SuperSurvivor:setWalkToAttempt(sq,toThis)
 end
 
 --- gets the walk attempts to a square
----@param sq square
+---@param sq IsoGridSquare
 ---@return number the number of walk attempts
 function SuperSurvivor:getWalkToAttempt(sq)	
 	if(sq) then
@@ -1372,7 +1372,7 @@ function SuperSurvivor:isWalking()
 end
 
 --- Walks to a square
----@param square square
+---@param square IsoGridSquare
 ---@return void
 function SuperSurvivor:walkTo(square)
 	if(square == nil) then 
@@ -1427,7 +1427,7 @@ function SuperSurvivor:walkTowards(x,y,z)
 end
 
 --- walks torwards a square dealing with doors and multiple attempts
----@param square square
+---@param square IsoGridSquare
 ---@return void
 function SuperSurvivor:walkToDirect(square)
 	if(square == nil) then 
@@ -1455,9 +1455,6 @@ function SuperSurvivor:WalkToPoint(tx, ty, tz)
 end
 
 --- stops if the walks to is not possible
----@param tx number
----@param ty number
----@param tz number
 ---@return void
 function SuperSurvivor:WalkToUpdate()
 	if(self.player:getModData().bWalking) then
@@ -1757,7 +1754,7 @@ end
 
 --- gets the first equipped bag of the survivor
 --- current priority is : back clothing > secondary hand > primary hand > inventory (although the survivors don't care about the hand items)
----@return inventory
+---@return InventoryContainer
 function SuperSurvivor:getBag()
 	local backItem = self.player:getClothingItem_Back()
 	if(backItem ~= nil) and (instanceof(backItem,"InventoryContainer")) then 
@@ -1779,9 +1776,9 @@ end
 
 --- gets an item from inside of a bag 
 ---@deprecated not tested yet. 
----@param inventory inventory
+---@param inventory InventoryContainer
 ---@param item string
----@return item
+---@return InventoryItem
 function SuperSurvivor:getBagItem(inventory, item)
 	if(inventory ~= nil) and (inventory:getCategory() == "Container") then 
 		return inventory:getItemContainer():FindAndReturn(item); 
@@ -1792,9 +1789,9 @@ end
 
 --- gets an item from inside of a bag 
 ---@deprecated not tested yet.
----@param inventory inventory
----@param item lootType
----@return item
+---@param inventory InventoryContainer
+---@param category lootType
+---@return InventoryItem
 function SuperSurvivor:getBagItemByCategory(inventory, category)
 	---check if condition to self.player:getInventory() value
 	if(inventory ~= nil) and (inventory:getCategory() == "Container") then 
@@ -1807,7 +1804,7 @@ end
 --- gets an item from survivor's inventory
 --- current priority is : back clothing > secondary hand > primary hand > inventory
 ---@param thisType string
----@return item
+---@return InventoryItem
 function SuperSurvivor:FindAndReturn(thisType)
 	local item = self.player:getInventory():FindAndReturn(thisType);
 	
@@ -1826,7 +1823,7 @@ end
 
 --- returns an item from survivor inventory by category
 ---@deprecated not tested yet.
----@return item returns any item from 
+---@return InventoryItem returns any item from
 function SuperSurvivor:FindAndReturnByCategory(category)
 	--TODO : add getBagItemByCategory 
 	local inventory = self.player:getInventory()
@@ -1859,7 +1856,7 @@ function SuperSurvivor:FindAndReturnByCategory(category)
 end
 
 --- gets any weapon from survivor's inventory
----@return weapon
+---@return HandWeapon
 function SuperSurvivor:getWeapon()
 	--TODO : add call for FindAndReturnByCategory
 	local inventory = self.player:getInventory()
@@ -1888,7 +1885,7 @@ function SuperSurvivor:hasRoomInBag()
 end
 
 --- checks if there is any space inside survivor's inventory for the item
----@param item item
+---@param item InventoryItem
 function SuperSurvivor:hasRoomInBagFor(item)
 	local playerBag = self:getBag()
 	
@@ -1941,8 +1938,8 @@ function SuperSurvivor:isAmmoForMe(itemType)
 end
 
 --- forces the survivor to have an item by re-adding in its inventory if necessary
----@param item item
----@return item
+---@param item InventoryItem
+---@return InventoryItem
 function SuperSurvivor:ensureInInv(item)
 	if(self:getBag():contains(item)) then 
 		self:getBag():Remove(item) 
@@ -2043,8 +2040,8 @@ function SuperSurvivor:setNoWaterNearBy(toThis)
 	self.NoWaterNear = toThis
 end
 --- adds a looted square with a category item
----@param sq square
----@param Category lootType 
+---@param sq IsoGridSquare
+---@param category lootType
 ---@return void
 function SuperSurvivor:addContainerSquareLooted(sq,category)
 	if(sq) then
@@ -2058,7 +2055,7 @@ function SuperSurvivor:addContainerSquareLooted(sq,category)
 end
 
 --- sets a looted square to a value
----@param sq square
+---@param sq IsoGridSquare
 ---@param toThis number 
 ---@param category lootType
 ---@return void
@@ -2069,7 +2066,7 @@ function SuperSurvivor:setContainerSquareLooted(sq,toThis,category)
 	end
 end
 --- Gets the amount of items of a category in a square 
----@param sq square square to be searched
+---@param sq IsoGridSquare square to be searched
 ---@param category lootType the name of the selected category
 ---@return number the amount of items of the selected category
 function SuperSurvivor:getContainerSquareLooted(sq,category)	
@@ -2097,7 +2094,7 @@ end
 --- It needs work though, because right now it will more than likely mark off the whole building.
 --- IFOD stands for 'In front of door' but it will also check for barricaded windows too.
 ---@deprecated this functions is not being used. will be removed soon
----@param building building
+---@param building IsoBuilding
 ---@return void
 function SuperSurvivor:MarkCurrentSquareExplored_IFOD(building)
 	if (not self:inFrontOfLockedDoor()) or (not self:inFrontOfBarricadedWindowAlt()) then 
@@ -2115,7 +2112,7 @@ function SuperSurvivor:MarkCurrentSquareExplored_IFOD(building)
 	end
 end
 --- Marks a building as explored
----@param building building
+---@param building IsoBuilding
 ---@return void
 function SuperSurvivor:MarkBuildingExplored(building)
 	if(not building) then 
@@ -2139,7 +2136,7 @@ function SuperSurvivor:MarkBuildingExplored(building)
 end
 
 --- Checks it the current building was explored
----@param building building
+---@param building IsoBuilding
 ---@return boolean returns true if the building was explored
 function SuperSurvivor:getBuildingExplored(building)
 	if self:isTargetBuildingClaimed(building) then 
@@ -2174,7 +2171,7 @@ function SuperSurvivor:inUnLootedBuilding()
 	return false
 end
 --- checks if the survivor explored
----@param building any
+---@param building IsoBuilding
 ---@return boolean returns true if the 
 function SuperSurvivor:AttemptedLootBuilding(building)
 	if(not building) then 
@@ -2195,7 +2192,7 @@ function SuperSurvivor:AttemptedLootBuilding(building)
 end
 
 --- Searches for the closests square outside a building by searching in a range of 20 squares
----@param thisBuildingSquare any
+---@param thisBuildingSquare IsoGridSquare
 ---@return any returns the closest and outside square or the current square if is out of the range of searching (20)
 function SuperSurvivor:FindClosestOutsideSquare(thisBuildingSquare)
 
@@ -2266,7 +2263,7 @@ function SuperSurvivor:usingGun()
 end
 
 --- checks if the survivor is enemy from self
----@param character any
+---@param character IsoGameCharacter
 ---@return boolean
 function SuperSurvivor:isEnemy(character)
 	local group = self:getGroup()
@@ -2293,7 +2290,7 @@ function SuperSurvivor:isEnemy(character)
 end
 
 --- gets if the survivor is using a weapon
----@return weapon
+---@return HandWeapon
 function SuperSurvivor:hasWeapon()
 	if(self.player:getPrimaryHandItem() ~= nil) and (instanceof(self.player:getPrimaryHandItem(),"HandWeapon")) then
 		return self.player:getPrimaryHandItem() 
@@ -2327,8 +2324,8 @@ function SuperSurvivor:getNeedAmmo()
 	return false
 end
 
---- checks if the survivor is inside the range of an attack 
----@param enemy any
+--- checks if and enemy is inside the range of an attack
+---@param enemy IsoGameCharacter
 ---@return boolean
 function SuperSurvivor:isEnemyInRange(enemy)
 	if not enemy then 
@@ -2341,7 +2338,7 @@ function SuperSurvivor:isEnemyInRange(enemy)
 end
 
 --- checks if something is in the same room of the survivor 
----@param movingObj any
+---@param movingObj IsoGameCharacter
 ---@return boolean
 function SuperSurvivor:isInSameRoom(movingObj)
 	if not movingObj then 
@@ -2371,7 +2368,7 @@ function SuperSurvivor:isInSameRoomWithEnemy()
 end  
 
 --- checks if something is in the same building of the survivor
----@param movingObj any
+---@param movingObj IsoGameCharacter
 ---@return boolean
 function SuperSurvivor:isInSameBuilding(movingObj)
 	if not movingObj then 
@@ -2459,9 +2456,10 @@ function SuperSurvivor:isEnemyHuman()
 	return instanceof(self.LastEnemeySeen,"IsoPlayer")
 end
 
---- unjam/reaload and rack a weapon
+--- unjam/reload and rack a weapon
 --- TODO: this function can be turned in a task (and it have a lot of responsabilities)
----@param weapon any
+---@param weapon HandWeapon
+---@return boolean
 function SuperSurvivor:ReadyGun(weapon)
 	--self:DoZombieEntityScan()
 	
@@ -2630,14 +2628,14 @@ function SuperSurvivor:ReadyGun(weapon)
 end
 
 --- checks if the survivor needs to ready the gun
----@param weapon weapon
+---@param weapon HandWeapon
 ---@return boolean
 function SuperSurvivor:needToReadyGun(weapon)
 	return weapon and self:usingGun() and not ISReloadWeaponAction.canShoot(weapon)
 end
 
 --- gets the amount of ammo the survivor has its inventory
----@param gun weapon
+---@param gun HandWeapon
 ---@return number
 function SuperSurvivor:getInventoryAmmoCount(gun)
 	local ammoType = gun:getAmmoType()
@@ -2787,7 +2785,7 @@ function SuperSurvivor:WeaponReady()
 end
 
 --- opens a bullet box and returns it
----@return any
+---@return InventoryItem
 function SuperSurvivor:openBoxForGun()
 	local index = 0
 	local ammoBox = nil
@@ -2832,7 +2830,7 @@ function SuperSurvivor:openBoxForGun()
 	end
 end
 
---- check if the survivor has any kind of ammo 
+--- check if the survivor has any kind of ammo
 ---@return boolean
 function SuperSurvivor:hasAmmoForPrevGun()
 	if(self.AmmoTypes ~= nil) and (#self.AmmoTypes > 0) then 	
@@ -2896,14 +2894,14 @@ function SuperSurvivor:reEquipMele()
 	end
 end
 --- sets the meleWeapon
----@param handWeapon any
+---@param handWeapon HandWeapon
 ---@return void
 function SuperSurvivor:setMeleWep(handWeapon)
 	self:Get():getModData().meleWeapon = handWeapon:getType()
 	self.LastMeleUsed = handWeapon
 end
 --- gets the gun
----@param handWeapon any
+---@param handWeapon HandWeapon
 ---@return void
 function SuperSurvivor:setGunWep(handWeapon)
 	self:Get():getModData().gunWeapon = handWeapon:getType()
@@ -2954,7 +2952,7 @@ function SuperSurvivor:canAttack()
 end
 
 --- gets every square between the npc and the target and adds a cover value 
----@param victim any
+---@param victim IsoGameCharacter
 ---@return number represents the final cover value of the victim
 function SuperSurvivor:checkVictimCoverValue(victim)
 	local totalCover = 0
@@ -2985,7 +2983,7 @@ function SuperSurvivor:checkVictimCoverValue(victim)
 end
 
 --- gets the weapon damager based on a rng and distance from the target
----@param weapon any
+---@param weapon HandWeapon
 ---@param distance number
 ---@return number represents the damage that the weapon will give if hits
 function SuperSurvivor:getWeaponDamage(weapon,distance)
@@ -3008,7 +3006,7 @@ end
 
 --- Gets the change of a shoot based on aiming skill, weapon, victim's distance and cover
 --- TODO: re-add rng damage
----@param weapon weapon
+---@param weapon HandWeapon
 ---@param victim IsoPlayer
 ---@return number represents the chance of a hit
 function SuperSurvivor:getGunHitChange(weapon,victim)
@@ -3236,7 +3234,7 @@ end
 ---TODO: deal with the IFOD functions
 
 --- gets the facing square of the survivor 
----@return square return the square in front of the survivor or the current square of the survivor if there is no square in front of the survivor
+---@return IsoGridSquare return the square in front of the survivor or the current square of the survivor if there is no square in front of the survivor
 function SuperSurvivor:getFacingSquare()	
 	local fsquare = square:getTileInDirection(self.player:getDir())
 	
@@ -3281,7 +3279,7 @@ function SuperSurvivor:isTargetBuildingDangerous()
 end
 
 --- get the current building of the survivor
----@return building
+---@return IsoBuilding
 function SuperSurvivor:getBuilding()
 	if(self.player == nil) then 
 		return nil 
@@ -3305,14 +3303,14 @@ function SuperSurvivor:getBuilding()
 end
 
 --- checks if the survivor is inside of some building
----@param building building
+---@param building IsoBuilding
 ---@return boolean
 function SuperSurvivor:isInBuilding(building)
 	return building == self:getBuilding()
 end
 
 --- gets any adjacent door of the survivor
----@return any
+---@return IsoDoor
 function SuperSurvivor:inFrontOfDoor()
 	local cs = self.player:getCurrentSquare()
 	local osquare = GetAdjSquare(cs,"N")
@@ -3386,7 +3384,7 @@ function SuperSurvivor:inFrontOfWindow()
 end
 --- since inFrontOfWindow (not alt) doesn't have this function's code
 --- TODO: change function name to getAdjacentWindow
----@return any
+---@return IsoWindow
 function SuperSurvivor:inFrontOfWindowAlt() 
 	local cs = self.player:getCurrentSquare()
 
@@ -3446,8 +3444,8 @@ function SuperSurvivor:NPC_inFrontOfUnBarricadedWindowOutside()
 end
 
 --- get the closest unbarricaded window of a building
----@param building building
----@return any
+---@param building IsoBuilding
+---@return IsoWindow
 function SuperSurvivor:getUnBarricadedWindow(building)
 	local pcs = self.player:getCurrentSquare()
 	local WindowOut = nil
@@ -3478,7 +3476,7 @@ function SuperSurvivor:getUnBarricadedWindow(building)
 end
 
 --- sets a square as explored
----@param sq square the square to be explored
+---@param sq IsoGridSquare the square to be explored
 ---@return void
 function SuperSurvivor:Explore(sq)
 	if(sq) then
@@ -3491,7 +3489,7 @@ function SuperSurvivor:Explore(sq)
 	end
 end
 --- gets the amount of time some square was explored by the survivor
----@param sq square
+---@param sq IsoGridSquare
 ---@return number usually returns 1 when its explored and 0 when its not
 function SuperSurvivor:getExplore(sq)	
 	if(sq) then
@@ -3507,7 +3505,7 @@ function SuperSurvivor:getExplore(sq)
 end
 
 --- marks a whole building as explored
----@param building building
+---@param building IsoBuilding
 ---@return void
 function SuperSurvivor:MarkAttemptedBuildingExplored(building)
 	if(building == nil) then
@@ -3527,7 +3525,7 @@ function SuperSurvivor:MarkAttemptedBuildingExplored(building)
 end
 
 --- resets the building as explored and explored attempts
----@param building building
+---@param building IsoBuilding
 ---@return void
 function SuperSurvivor:resetBuildingWalkToAttempts(building)
 	if(building == nil) then return false end
@@ -3553,7 +3551,7 @@ end
 
 --- finds the nearest square 
 ---@param down boolean checks if the sheetrop is for getting down
----@return square
+---@return IsoGridSquare
 function SuperSurvivor:findNearestSheetRopeSquare(down)
 	local sq, CloseSquareSoFar;
 		local range = 20
@@ -3588,8 +3586,8 @@ end
 --- TODO : this should be moved to the find Task
 ---@param itemType string
 ---@param TypeOrCategory string
----@return item
-function SuperSurvivor:FindThisNearBy(itemType, TypeOrCategory)		
+---@return InventoryItem
+function SuperSurvivor:FindThisNearBy(itemType, TypeOrCategory)
 	if(self.GoFindThisCounter > 0) then 
 		return nil 
 	end
@@ -3766,7 +3764,7 @@ end
 
 --- says a text in debug mode
 ---@deprecated this function does nothing
----@param text any
+---@param text string
 function SuperSurvivor:NPCDebugPrint(text)
 	if (DebugOptions == true) then
 		-- This gives spacing for the console so you can find it
@@ -3780,7 +3778,7 @@ function SuperSurvivor:NPCDebugPrint(text)
 end
 
 --- says a text in debug mode and all infor of the survivor in debug mode
----@param text any
+---@param text string
 ---@return void
 function SuperSurvivor:DebugSay(text) 
 	-- Now, the In game DebugOptions will now effect this.
@@ -3992,7 +3990,7 @@ end
 --- TASKS ---
 
 --- wears a clothing
----@param ClothingItemName item
+---@param ClothingItemName Clothing
 ---@return void
 function SuperSurvivor:WearThis(ClothingItemName)
  
@@ -4599,7 +4597,7 @@ function SuperSurvivor:getDangerSeenCount()
 end
 
 --- checks if the survivor is seen an entity
----@param character any the character to be searched (if its a zombie itll use CanSee(character))
+---@param character IsoGameCharacter the character to be searched (if its a zombie itll use CanSee(character))
 ---@return boolean
 function SuperSurvivor:RealCanSee(character)
 	
@@ -4631,7 +4629,7 @@ function SuperSurvivor:DoVision()
 	local dangerRange = 6
 	if self.AttackRange > dangerRange then dangerRange = self.AttackRange end
 	
-	local closestNumber = nil
+	local closestNumber
 	local tempdistance = 1
 	
 	
@@ -4721,7 +4719,7 @@ function SuperSurvivor:Companion_DoSixthSenseScan()
 		self.EnemiesOnMe = 0
 	end	
 
-	local closestNumber = nil
+	local closestNumber
 	local tempdistance = 1
 	
 	
@@ -4794,7 +4792,7 @@ function SuperSurvivor:DoHumanEntityScan()
 	local dangerRange = 6
 	if self.AttackRange > dangerRange then dangerRange = self.AttackRange end
 	
-	local closestNumber = nil
+	local closestNumber
 	local tempdistance = 1
 		
 	if(spottedList ~= nil) then
@@ -5234,7 +5232,7 @@ end
 --- loads a survivor 
 --- It doesnt use "self" variable so it can be moved to other file 
 --- TODO : move this to SuperSurvivorManager
----@param square square the square that the survivor will be loaded
+---@param square IsoGridSquare the square that the survivor will be loaded
 ---@param ID number the ID of the survivor (needs to be inside the savefiles)
 ---@return IsoPlayer returns Survivor if the file exists
 function SuperSurvivor:loadPlayer(square, ID)
