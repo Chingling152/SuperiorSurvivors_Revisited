@@ -120,6 +120,7 @@ end
 
 --- checks if a character is inside of a group base
 ---@param thisplayer IsoGameCharacter
+---@overload fun(thisplayer: IsoGridSquare): boolean
 ---@return boolean
 function SuperSurvivorGroup:IsInBounds(thisplayer)
 	if(self.Bounds[4]) then
@@ -627,7 +628,7 @@ end
 --- END DEBUG ---
 
 --- FILE MANAGEMENT ---
---- TODO: move to a file to save and load
+--- TODO: move to SuperSurvivorGroupManager
 
 --- Save the current group
 ---@return void

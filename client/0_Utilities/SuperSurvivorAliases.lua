@@ -144,7 +144,7 @@
 ---@field MedicalStorageArea number[]
 ---@field GuardArea number[]
 
----@alias GroupArea
+---@alias GroupArea string
 ---'"ChopTreeArea"'
 ---'"TakeCorpseArea"'
 ---'"TakeWoodArea"'
@@ -157,6 +157,9 @@
 ---'"WeaponStorageArea"'
 ---'"MedicalStorageArea"'
 ---'"GuardArea"'
+
+---@class SuperSurvivorGroupManager
+---@field Groups SuperSurvivorGroup[]
 
 --- END GROUPS --- 
 
