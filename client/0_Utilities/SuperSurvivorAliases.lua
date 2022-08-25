@@ -1,5 +1,5 @@
 --- this file only contains aliases to improve auto-complete and documentation
---- this file doenst have any code
+--- this file doens't have any code
 
 --- SUPER SURVIVOR ---
 ---@class modData all mod data from SuperiorSurvivors mod
@@ -57,7 +57,7 @@
 ---| '"Doctor"'
 ---| '"Farmer"'
 
----@class SuperSurvivor
+---@class SuperSurvivor represents a survivor
 ---@field GroupRole GroupRole
 ---@field SquareContainerSquareLooteds table
 ---@field SquaresExplored table 
@@ -70,6 +70,9 @@
 ---@field userName TextDrawObject 
 ---@field LastEnemeySeen IsoPlayer 
 ---@field player IsoPlayer
+
+---@class SuperSurvivorManager manages all Survivors
+---@field SuperSurvivors SuperSurvivor[]
 
 --- END SUPER SURVIVOR ---
 
@@ -108,7 +111,8 @@
 
 --- END ITEMS ---
 
---- GROUPS --- 
+--- GROUPS ---
+
 ---@alias GroupRole string
 ---|'"Worker"'
 ---|'"Companion"'
@@ -119,10 +123,12 @@
 ---|'"Doctor"'
 ---|'"Sheriff"'
 ---|'"Follow"'
+---|'"Any"'
 
 ---@class SuperSurvivorGroup
 ---@field Bounds number[]
 ---@field GroupAreas GroupAreas
+---@field Members number[]
 
 ---@class GroupAreas
 ---@field ChopTreeArea number[]
@@ -137,6 +143,20 @@
 ---@field WeaponStorageArea number[]
 ---@field MedicalStorageArea number[]
 ---@field GuardArea number[]
+
+---@alias GroupArea
+---'"ChopTreeArea"'
+---'"TakeCorpseArea"'
+---'"TakeWoodArea"'
+---'"FarmingArea"'
+---'"ForageArea"'
+---'"CorpseStorageArea"'
+---'"FoodStorageArea"'
+---'"WoodStorageArea"'
+---'"ToolStorageArea"'
+---'"WeaponStorageArea"'
+---'"MedicalStorageArea"'
+---'"GuardArea"'
 
 --- END GROUPS --- 
 

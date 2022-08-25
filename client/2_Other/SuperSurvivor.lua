@@ -610,8 +610,9 @@ function SuperSurvivor:getBaseCenter()
 	return nil
 end
 
---- Checks if the current building
+--- Checks if the current building does not belongs to the survivor's group
 ---@param building IsoBuilding
+---@return boolean
 function SuperSurvivor:isTargetBuildingClaimed(building)
 	if(SafeBase) then 
 		local tempsquare = getRandomBuildingSquare(building)
@@ -629,9 +630,10 @@ end
 
 --- GROUPS --- 
 --- sets the group role of the survivor
+-- TODO: Maybe recieve strings like : "Job_Worker" and get it from getJobText()
 ---@param toValue string
 ---@return void
-function SuperSurvivor:setGroupRole(toValue) -- todo: Maybe recieve strings like : "Job_Worker" and get it from getJobText()
+function SuperSurvivor:setGroupRole(toValue) 
 	self.player:getModData().GroupRole = toValue
 end
 
@@ -702,7 +704,7 @@ function SuperSurvivor:isInGroup(thisGuy)
 end
 --- checks if a survivor is groupless 
 ---@param thisGuy any
----TODO : use a self reference
+---TODO : use self reference
 ---@return boolean returns true if the survivor belongs to any group
 function SuperSurvivor:isGroupless(thisGuy) 
 	if(thisGuy:getModData().Group == nil) then 

@@ -1,16 +1,21 @@
+---@type SuperSurvivorManager
 SuperSurvivorManager = {}
 SuperSurvivorManager.__index = SuperSurvivorManager
 
+--- creates a Survivor Manager
+---@return SuperSurvivorManager
 function SuperSurvivorManager:new()
-  local o = {}
-  setmetatable(o, self)
-  self.__index = self
 
-  o.SuperSurvivors = {}
-  o.SurvivorCount = 3
-  o.MainPlayer = 0
+	---@type SuperSurvivorManager
+	local o = {}
+  	setmetatable(o, self)
+  	self.__index = self
 
-  return o
+  	o.SuperSurvivors = {}
+  	o.SurvivorCount = 3
+  	o.MainPlayer = 0
+
+  	return o
 end
 
 --- START ---
@@ -71,6 +76,10 @@ end
 --- END PLAYER ---
 
 --- GET ---
+
+--- gets a survivor by id
+---@param thisID number
+---@return SuperSurvivor returns the survivor is the param id or nil if it doesn't exists
 function SuperSurvivorManager:Get(thisID)
     if (not self.SuperSurvivors[thisID]) then
         -- print("super survivor #"..tostring(thisID).." was not found")
