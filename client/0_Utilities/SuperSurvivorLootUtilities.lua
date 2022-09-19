@@ -1,6 +1,7 @@
 --this file has methods related to looting
 
 --- DEBUG ---
+
 local enableDebugLoot = false
 
 local function debugLoot(text)
@@ -48,16 +49,11 @@ end
 
 --- CATEGORIES ---
 
----@alias itemCategory
----| "Food"
----| "Water"
----| "Weapon"
-
 --- finds the item inside of a 'container' based on the 'category'
----@param container any the container that the item will be searched
+---@param container InventoryContainer the container that the item will be searched
 ---@param category itemCategory the type of item that the item will be searched
----@param survivor any survivor searching for item (only in food searching)
----@return any returns the item insde of the container with the selected category or nil if not found
+---@param survivor SuperSurvivor survivor searching for item (only in food searching)
+---@return InventoryItem returns the item insde of the container with the selected category or nil if not found
 function FindItemByCategory(container, category, survivor)
 
 	if(category == "Food") then 
@@ -73,7 +69,7 @@ function FindItemByCategory(container, category, survivor)
 end
 
 --- checks if the 'item' belongs to the 'category'
----@param item any
+---@param item Item
 ---@param category itemCategory category to be checked
 ---@return boolean returns true if the item belongs to the category
 function hasCategory(item,category)
@@ -91,9 +87,10 @@ end
 --- END CATEGORIES ---
 
 --- WEAPONS ---
+
 --- gets a weapon inside of a 'container'
----@param container any container to be searched
----@return any returns the first weapon inside the container or nil if not found
+---@param container ItemContainer container to be searched
+---@return HandWeapon returns the first weapon inside the container or nil if not found
 function FindAndReturnWeapon(container)
 	if(not container) then 
     return nil 
@@ -125,8 +122,8 @@ function FindAndReturnWeapon(container)
 end
 
 --- gets the best weapon inside of a 'container'
----@param container any container to be searched
----@return any returns the best weapon inside the container or nil if not found
+---@param container ItemContainer container to be searched
+---@return HandWeapon returns the best weapon inside the container or nil if not found
 function FindAndReturnBestWeapon(container)
 	
 	if(container == nil) then 
@@ -175,12 +172,13 @@ end
 local FoodsToExlude = {"Bleach", "Cigarettes", "HCCigar", "Antibiotics", "Teabag2", "Salt", "Pepper", "EggCarton"}
 
 --- gets any kind of food that is not in 'FoodsToExlude' and not poisoned
----@param thisItemContainer any 
----@return any returns the first found food inside the container
+---@param thisItemContainer ItemContainer
+---@return Food returns the first found food inside the container
 function FindAndReturnFood(thisItemContainer)
-	if(not thisItemContainer) then 
-    return nil 
-  end
+	if(not thisItemContainer) then
+    	return nil
+  	end
+
 
 	debugMethodName("FindAndReturnFood")
 	local items = thisItemContainer:getItems()
@@ -209,7 +207,7 @@ function FindAndReturnFood(thisItemContainer)
 end
 
 --- gets the score of the food based on status changes 
----@param item any any food item
+---@param item Food any food item
 ---@return number returns the score of the food
 function GetFoodScore(item)-- TODO: improve food searching (and the logging)
 	debugMethodName("GetFoodScore")
@@ -303,9 +301,9 @@ function GetFoodScore(item)-- TODO: improve food searching (and the logging)
 end
 
 --- gets the best food in the current square of the 'survivor'
----@param sq any
----@param survivor any 
----@return any returns the best food on the ground based on a score system
+---@param sq IsoGridSquare
+---@param survivor SuperSurvivor 
+---@return Food returns the best food on the ground based on a score system
 function FindAndReturnBestFoodOnFloor(sq, survivor)
 	if(not sq) then 
     return nil 
@@ -352,9 +350,9 @@ function FindAndReturnBestFoodOnFloor(sq, survivor)
 end
 
 --- gets the best food in a container next to the 'survivor'
----@param thisItemContainer any
----@param survivor any 
----@return any returns the best food based on a score system
+---@param thisItemContainer InventoryContainer
+---@param survivor SuperSurvivor 
+---@return Food returns the best food based on a score system
 function FindAndReturnBestFood(thisItemContainer, survivor)
 	if(not thisItemContainer) then 
     return nil 
@@ -404,8 +402,8 @@ end
 --- WATER ---
 
 --- gets any water inside of 'container'
----@param container any 
----@return any returns the first water found
+---@param container InventoryContainer
+---@return Food returns the first water found
 function FindAndReturnWater(container) 
 	if(not container) then 
     return nil 
@@ -434,7 +432,7 @@ function FindAndReturnWater(container)
 end
 
 --- checks if 'item' is a water source
----@param item any 
+---@param item InventoryItem
 ---@return boolean return true if the current it is a water source (and is not Bleach)
 function isItemWater(item)
 	return ((item:isWaterSource()) and (item:getType() ~= "Bleach"))

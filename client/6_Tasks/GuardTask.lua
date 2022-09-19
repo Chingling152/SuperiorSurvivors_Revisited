@@ -1,8 +1,10 @@
+---@type GuardTask
 GuardTask = {}
 GuardTask.__index = GuardTask
 
 function GuardTask:new(superSurvivor, square)
 
+	---@type GuardTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

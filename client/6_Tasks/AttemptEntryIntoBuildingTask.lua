@@ -1,8 +1,10 @@
+---@type AttemptEntryIntoBuildingTask
 AttemptEntryIntoBuildingTask = {}
 AttemptEntryIntoBuildingTask.__index = AttemptEntryIntoBuildingTask
 
 function AttemptEntryIntoBuildingTask:new(superSurvivor,building)
 
+	---@type AttemptEntryIntoBuildingTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

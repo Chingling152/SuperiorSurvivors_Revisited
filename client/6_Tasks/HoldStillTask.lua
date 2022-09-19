@@ -1,8 +1,10 @@
+---@type HoldStillTask
 HoldStillTask = {}
 HoldStillTask.__index = HoldStillTask
 
 function HoldStillTask:new(superSurvivor, playerInitiated)
 
+	---@type HoldStillTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

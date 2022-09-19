@@ -1,10 +1,13 @@
+---@type CleanInvTask
 CleanInvTask = {}
 CleanInvTask.__index = CleanInvTask
 
 function CleanInvTask:new(superSurvivor, DropSquare, incldHandItems)
 
+	---@type CleanInvTask
 	local o = {}
 	setmetatable(o, self)
+	
 	self.__index = self
 	superSurvivor:DebugSay("CleanInvTask is about to trigger a StopWalk! ")
 	superSurvivor:StopWalk()

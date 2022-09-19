@@ -1,8 +1,10 @@
+---@type SurenderTask
 SurenderTask = {}
 SurenderTask.__index = SurenderTask
 
 function SurenderTask:new(superSurvivor, enemy)
 
+	---@type SurenderTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

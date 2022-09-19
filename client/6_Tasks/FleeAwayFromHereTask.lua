@@ -1,8 +1,10 @@
+---@type FleeFromHereTask
 FleeFromHereTask = {}
 FleeFromHereTask.__index = FleeFromHereTask
 
 function FleeFromHereTask:new(superSurvivor,fleeFromHere)
 
+	---@type FleeFromHereTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

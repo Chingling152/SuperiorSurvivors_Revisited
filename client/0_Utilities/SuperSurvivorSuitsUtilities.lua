@@ -10,7 +10,8 @@ local function debugSuits(text)
 end
 
 --- Gets a random outfit for a survivor
----@param SS any survivor that will wear the outfit
+---@param SS SuperSurvivor survivor that will wear the outfit
+---@return void
 function getRandomSurvivorSuit(SS)
 	debugSuits(" ----- getRandomSurvivorSuit -----")
 
@@ -70,16 +71,8 @@ function getRandomSurvivorSuit(SS)
 	debugSuits(" ----- getRandomSurvivorSuit -----")
 end
 
----@alias rarity
----| "Common"
----| "Uncommon"
----| "Normal"
----| "Rare"
----| "VeryRare"
----| "Legendary"
-
 --- sets an outfit for a survivor given if table and outfit found 
----@param SS any
+---@param SS SuperSurvivor
 ---@param tbl rarity table name to be searched
 ---@param name string outfit name
 function setRandomSurvivorSuit(SS,tbl,name)

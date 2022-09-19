@@ -1,8 +1,10 @@
+---@type EquipWeaponTask
 EquipWeaponTask = {}
 EquipWeaponTask.__index = EquipWeaponTask
 
 function EquipWeaponTask:new(superSurvivor)
 
+	---@type EquipWeaponTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

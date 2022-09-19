@@ -1,8 +1,10 @@
+---@type SpeakDialogueTask
 SpeakDialogueTask = {}
 SpeakDialogueTask.__index = SpeakDialogueTask
 
 function SpeakDialogueTask:new(superSurvivor, TalkToMe, DialogueID)
 
+	---@type SpeakDialogueTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

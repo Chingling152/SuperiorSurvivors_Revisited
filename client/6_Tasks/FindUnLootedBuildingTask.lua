@@ -1,8 +1,10 @@
+---@type FindUnlootedBuildingTask
 FindUnlootedBuildingTask = {}
 FindUnlootedBuildingTask.__index = FindUnlootedBuildingTask
 
 function FindUnlootedBuildingTask:new(superSurvivor)
 
+	---@type FindUnlootedBuildingTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

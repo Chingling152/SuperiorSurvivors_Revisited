@@ -1,8 +1,10 @@
+---@type FirstAideTask
 FirstAideTask = {}
 FirstAideTask.__index = FirstAideTask
 
 function FirstAideTask:new(superSurvivor)
 
+	---@type FirstAideTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

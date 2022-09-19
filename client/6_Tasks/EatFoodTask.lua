@@ -1,8 +1,10 @@
+---@type EatFoodTask
 EatFoodTask = {}
 EatFoodTask.__index = EatFoodTask
 
 function EatFoodTask:new(superSurvivor, food)
 
+	---@type EatFoodTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

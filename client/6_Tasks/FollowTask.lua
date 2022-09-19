@@ -1,8 +1,10 @@
+---@type FollowTask
 FollowTask = {}
 FollowTask.__index = FollowTask
 
 function FollowTask:new(superSurvivor, FollowMeplayer)
 
+	---@type FollowTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
@@ -70,11 +72,6 @@ function FollowTask:update()
 	
 	self.parent:setSneaking(self.FollowChar:isSneaking()) -- sneaking if perosn you follow is
 	--print(self.parent:getName()..": isInAction = "..tostring(self.parent:isInAction()))
-
-	-- they keep talking
-	if(ZombRand(70) == 0) then 
-		self.parent:Speak(getSpeech("IdleChatter"))  
-	end
 	
 		if(true) then -- self.parent:isInAction() == false) then -- for some reason this is true when they doing nothing sometimes...
 		

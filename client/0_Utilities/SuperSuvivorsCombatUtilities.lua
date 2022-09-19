@@ -51,9 +51,9 @@ function getAmmoBox(bullets)
 	return ""
 end
 
---- func desc
+--- get the amount of a box name
 ---@param box string ammo box name
----@return integer returns the amount of bullets inside of the ammo box
+---@return number returns the amount of bullets inside of the ammo box
 function getBoxCount(box)
 	if (box == "BB177Box") then return 500
 	elseif (box == "Bullets22Box") then return 100
@@ -89,8 +89,9 @@ function getBoxCount(box)
 	end
 end
 
+--- Toggle PVP on and Off
+---@return void
 function SurvivorTogglePVP()
-
 	if(IsoPlayer.getCoopPVP() == true) then
 		getSpecificPlayer(0):Say("PVP Disabled");
 		IsoPlayer.setCoopPVP(false);
@@ -98,7 +99,6 @@ function SurvivorTogglePVP()
 		PVPDefault = false;
 		PVPButton:setImage(PVPTextureOff)
 	elseif(IsoPlayer.getCoopPVP() == false) then
-
 		IsoPlayer.setCoopPVP(true);
 		if(ForcePVPOn ~= true) then
 			getSpecificPlayer(0):getModData().PVP = true;
@@ -113,9 +113,9 @@ function SurvivorTogglePVP()
 end
 
 ---	gets in the database the ammo type for the weapon 'weapon' 
----@param weapon any weapon to have the ammo searched
----@param incModule any (not being used)
----@return any returns the ammo type of the gun or nil if not found
+---@param weapon InventoryItem weapon to have the ammo searched
+---@param incModule boolean (not being used)
+---@return string returns the ammo type of the gun or nil if not found
 function getAmmoType(weapon,incModule)
 
 	if(weapon == nil) or (weapon:getAmmoType() == nil) then 
@@ -139,49 +139,19 @@ function getAmmoType(weapon,incModule)
 	end
 
 	out = out:sub( 6 )
-	--[[
-	print("weapong type: "..wepType);
-	local wepdata = ReloadUtil:getWeaponData(wepType);
-	if(not wepdata or not wepdata.ammoType) then
-		--if(wepdata) then print("no weapon data for:"..tostring(weapon:getType()) .. "["..tostring(wepdata.ammoType).."]");
-		--else print("no weapon data for:"..tostring(weapon:getType())); end
-		return nil
-	end
-	local clipdata = ReloadUtil:getClipData(wepdata.ammoType);
 
-	if(clipdata) then
-		if(clipdata.ammoType) then
-			--print("ifif"..tostring(clipdata.ammoType));
-			out = tostring(clipdata.ammoType);
-			modulename = clipdata.moduleName;
-		else
-			--print("if-else"..tostring(wepdata.ammoType));
-			out = tostring(wepdata.ammoType);
-			modulename = wepdata.moduleName;
-		end
-	elseif(wepdata.ammoType) then
-		--print("else"..tostring(wepdata.ammoType));
-		out = tostring(wepdata.ammoType);
-		modulename = wepdata.moduleName;
-	else
-		--print("else?");
-	end
-	--]]
-
-
-	--if(incModule) then out = modulename .. "." .. out; end
 	return out;
-
 end
 
 --- gets in the database bullets for the weapon 'weapon' 
----@param weapon any a HandWeapon
----@param incModule any
+---@param weapon HandWeapon
+---@param incModule boolean
+---@return string[]
 function getAmmoBullets(weapon,incModule)
 
 	if(weapon == nil) then 
-    return nil 
-  end
+    	return nil
+  	end
 
 	if (instanceof(weapon,"HandWeapon")) and (weapon:isAimedFirearm()) then
 		local bullets = {}
@@ -215,4 +185,17 @@ function getAmmoBullets(weapon,incModule)
 	end
 
 	return nil
+end
+
+--- gets the cover value of an specific object
+---@param obj IsoObject the object that is being used as cover
+---@return number the number value of the protection of the cover
+function getCoverValue(obj)
+	if (tostring(obj:getType()) == "wall") then return 0 -- walls behind player are blocking if on same square
+	elseif (obj:getObjectName() == "Tree") then return 25
+	elseif (obj:getObjectName() == "Window") then return 70
+	elseif (obj:getObjectName() == "Door") then return 80
+	elseif (obj:getObjectName() == "Counter") then return 80
+	elseif (obj:getObjectName() == "IsoObject") then return 10 -- drastically lowered because small stuff like garbage was blocking shots
+	else return 0 end
 end

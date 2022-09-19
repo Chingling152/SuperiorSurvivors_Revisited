@@ -1,8 +1,10 @@
+---@type FindThisTask
 FindThisTask = {}
 FindThisTask.__index = FindThisTask
 
 function FindThisTask:new(superSurvivor, itemType, CategoryOrType, thisQuantity)
 
+	---@type FindThisTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

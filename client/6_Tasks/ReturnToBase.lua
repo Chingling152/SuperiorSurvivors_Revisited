@@ -1,8 +1,10 @@
+---@type ReturnToBaseTask
 ReturnToBaseTask = {}
 ReturnToBaseTask.__index = ReturnToBaseTask
 
 function ReturnToBaseTask:new(superSurvivor)
 
+	---@type ReturnToBaseTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

@@ -12,16 +12,12 @@ end
 
 --- SQUARES ---
 
----@alias direction 
----| '"N"' # North
----| '"S"' # South
----| '"E"' # East
----| '"W"' # West
+---@alias direction "N"|"S"|"E"|"W"
 
 ---Get an adjacent square based on a direction
----@param square any  
+---@param square IsoGridSquare  
 ---@param dir direction
----@return any the adjacent square
+---@return IsoGridSquare the adjacent square
 function GetAdjSquare(square,dir)
 
 	if(dir == 'N') then
@@ -36,9 +32,9 @@ function GetAdjSquare(square,dir)
 end
 
 --- gets all squares between 2 positions (don't use it with large distances)
----@param from any start square
----@param to any target square 
----@return table returns a table with the squares between the start and target squares (includes the target square)
+---@param from IsoGridSquare start square
+---@param to IsoGridSquare target square 
+---@return IsoGridSquare[] returns the squares between the start and target squares (includes the target square)
 function getSquaresBetween(from,to)
 	
 	local fromX = math.ceil(from:getX())
@@ -86,6 +82,10 @@ function getSquaresBetween(from,to)
 	return squares
 end
 
+--- gets a random and close square from outside of a building
+---@param square IsoGridSquare
+---@param building IsoBuilding
+---@return IsoGridSquare
 function getOutsideSquare(square,building)
 
 	if(not building) or (not square) then 
@@ -117,19 +117,19 @@ function getOutsideSquare(square,building)
 end
 
 -- TODO: remove this function and use getFleeSquareAlt
---- gets a random square awyas from the 'attackGuy'
----@param fleeGuy any 
----@param attackGuy any 
----@return any returns a random square away from attackGuy
+--- gets a random square away from the 'attackGuy'
+---@param fleeGuy IsoPlayer 
+---@param attackGuy IsoPlayer 
+---@return IsoGridSquare returns a random square away from attackGuy
 function getFleeSquare(fleeGuy,attackGuy)
 	return getFleeSquareAlt(fleeGuy,attackGuy,7)
 end
 
 --- New Function where you can choose the distance
----@param fleeGuy any
----@param attackGuy any
+---@param fleeGuy IsoPlayer
+---@param attackGuy IsoPlayer
 ---@param distanceToFlee number distance that the flee guy will search for
----@return any returns a random square in a distance away from attackGuy
+---@return IsoGridSquare returns a random square in a distance away from attackGuy
 function getFleeSquareAlt(fleeGuy,attackGuy,distanceToFlee)
 	local distance = distanceToFlee
 	local tempx = (fleeGuy:getX() - attackGuy:getX());
@@ -153,7 +153,7 @@ function getFleeSquareAlt(fleeGuy,attackGuy,distanceToFlee)
 end
 
 --- gets a square torwards a direction in a fixed distance (15)
----@param moveguy any
+---@param moveguy IsoPlayer
 ---@param x number
 ---@param y number
 ---@param z number
@@ -187,9 +187,10 @@ end
 --- END SQUARES ---
 
 --- COORDINATES ---
+
 --- gets the coordinate from a npc survivor
----@param id any if of the npc survivor
----@return any
+---@param id number id of the npc survivor
+---@return number
 function getCoordsFromID(id)
 
 	debugContext("----- getCoordsFromID -----")
@@ -213,8 +214,8 @@ function getCoordsFromID(id)
 end
 
 --- gets the distance between 2 things (objects, zombies, npcs or players)
----@param z1 any instance one
----@param z2 any instance two
+---@param z1 IsoGameCharacter instance one
+---@param z2 IsoGameCharacter instance two
 ---@return number the distance between the 2 instances
 function getDistanceBetween(z1,z2)
 	if(z1 == nil) or (z2 == nil) then 
@@ -259,8 +260,9 @@ end
 --- AREAS ----
 
 --- checks if the square is inside of the area 'area'
----@param sq any
----@param area table a table with 4 positions representing a square of points(number)
+---@param sq IsoGridSquare
+---@param area number[] a table with 4 positions representing a square of points(number)
+---@return boolean returns true if the square is inside of area param
 function isSquareInArea(sq,area)
 
 	local x1 = area[1]
@@ -282,7 +284,7 @@ end
 ---@param y1 number
 ---@param y2 number
 ---@param z  number 
----@return any the center square given the coordinates
+---@return IsoGridSquare the center square given the coordinates
 function getCenterSquareFromArea(x1,x2,y1,y2,z)
 
 	local xdiff = x2 - x1
@@ -295,7 +297,8 @@ function getCenterSquareFromArea(x1,x2,y1,y2,z)
 end
 
 --- gets a random square inside of an area
----@param area any 
+---@param area number[] 
+---@return IsoGridSquare
 function getRandomAreaSquare(area)
 
 	local x1 = area[1]
@@ -318,7 +321,7 @@ end
 --- OBJECTS ---
 
 --- Searches and return all objects of a type inside of a building
----@param building any current building
+---@param building IsoBuilding current building
 ---@param objectName string object name to be searched
 ---@return table returns a list with every object found inside the building
 function getAllObjectsFromBuilding(building,objectName)
@@ -363,8 +366,8 @@ end
 --- WINDOWS ----
 
 --- gets a window square 
----@param cs any a square
----@return any the window object if found or nil
+---@param cs IsoGridSquare a square
+---@return IsoGridSquare the window object if found or nil
 function getSquaresWindow(cs)
 
 	if not cs then 
@@ -384,8 +387,8 @@ function getSquaresWindow(cs)
 end
 
 --- gets the nearest adjacent window square of 'cs'
----@param cs any a square
----@return any the adjacent square next to window if found or nil
+---@param cs IsoGridSquare a square
+---@return IsoGridSquare the adjacent square next to window if found or nil
 function getSquaresNearWindow(cs)
 
 	local directions = { "N", "E" , "S", "W" }
@@ -405,9 +408,9 @@ function getSquaresNearWindow(cs)
 end
 
 --- get the closets window of a building, based on character's position
----@param building any building to be searched
----@param character any
----@return any return the closest window or nil if not found
+---@param building IsoBuilding building to be searched
+---@param character IsoGameCharacter
+---@return IsoWindow return the closest window or nil if not found
 function getCloseWindow(building,character)
 
 	local WindowOut = nil
@@ -448,9 +451,9 @@ function getCloseWindow(building,character)
 	return WindowOut
 end
 
---- checks if the window is barricated from both sides
----@param window any
----@param character any
+--- checks if the window is barricaded from both sides
+---@param window IsoWindow
+---@param character IsoGameCharacter
 function windowHasBarricade(window,character)
 
 	local thisSide = window:getBarricadeForCharacter(character)
@@ -468,9 +471,9 @@ end
 --- DOORS ----
 
 --- gets the inside square of a door
----@param door any 
----@param player any 
----@return any returns the inside square of a door or nil if not found
+---@param door IsoDoor
+---@param player IsoGameCharacter
+---@return IsoGridSquare returns the inside square of a door or nil if not found
 function getDoorsInsideSquare(door,player)
 
 	if(player == nil) or not (instanceof(door,"IsoDoor")) then 
@@ -494,9 +497,9 @@ function getDoorsInsideSquare(door,player)
 end
 
 --- gets the outside square of a door 
----@param door any 
----@param player any 
----@return any returns the inside outside of a door or nil if not found
+---@param door IsoDoor
+---@param player IsoPlayer 
+---@return IsoGridSquare returns the outside square of a door or nil if not found
 function getDoorsOutsideSquare(door,player)
 
 	if(player == nil) or not (instanceof(door,"IsoDoor")) then 
@@ -520,9 +523,9 @@ function getDoorsOutsideSquare(door,player)
 end
 
 --- gets the closest unlocked door
----@param building any
----@param character any
----@return any returns the closest exterior unlocked door or nil if not found
+---@param building IsoBuilding
+---@param character IsoGameCharacter
+---@return IsoDoor returns the closest exterior unlocked door or nil if not found
 function getUnlockedDoor(building,character)
 
 	local DoorOut = nil
@@ -556,9 +559,9 @@ function getUnlockedDoor(building,character)
 end
 
 --- gets the closest door inside of a 'building' based on a 'character' position
----@param building any
----@param character any 
----@return any returns the closest exterior door or nil if not found 
+---@param building IsoBuilding
+---@param character IsoGameCharacter
+---@return IsoDoor returns the closest exterior door or nil if not found
 function getDoor(building,character)
 	
 	local DoorOut = nil
@@ -595,8 +598,8 @@ end
 --- BUILDINGS ---
 
 --- gets the amount of zombies inside and around a building
----@param building any
----@return integer returns the amount of zombies found in the building
+---@param building IsoBuilding
+---@return number returns the amount of zombies found in the building
 function NumberOfZombiesInOrAroundBuilding(building)
 	local count = 0
 	local padding = 10
@@ -630,8 +633,8 @@ function NumberOfZombiesInOrAroundBuilding(building)
 end
 
 --- gets a random square inside of a building
----@param building any
----@return any returns a random square inside of the building
+---@param building IsoBuilding
+---@return IsoGridSquare returns a random square inside of the building
 function getRandomBuildingSquare(building)
 
 	local bdef = building:getDef()
@@ -647,8 +650,8 @@ function getRandomBuildingSquare(building)
 end
 
 --- gets a random and free square inside of a building (it tries 100 of times until it finds so be careful using it)
----@param building any
----@return any returns a random square inside of the building
+---@param building IsoBuilding
+---@return IsoGridSquare returns a random square inside of the building or nil if not inside of the building
 function getRandomFreeBuildingSquare(building)
 
 	if(building == nil) then 

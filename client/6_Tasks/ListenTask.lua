@@ -1,8 +1,10 @@
+---@type ListenTask
 ListenTask = {}
 ListenTask.__index = ListenTask
 
 function ListenTask:new(superSurvivor, TalkToMe, selfInitiated)
 
+	---@type ListenTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

@@ -1,8 +1,10 @@
+---@type BarricadeBuildingTask
 BarricadeBuildingTask = {}
 BarricadeBuildingTask.__index = BarricadeBuildingTask
 
 function BarricadeBuildingTask:new(superSurvivor)
 
+	---@type BarricadeBuildingTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

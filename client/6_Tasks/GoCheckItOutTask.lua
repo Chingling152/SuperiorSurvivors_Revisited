@@ -1,8 +1,10 @@
+---@type GoCheckItOutTask
 GoCheckItOutTask = {}
 GoCheckItOutTask.__index = GoCheckItOutTask
 
 function GoCheckItOutTask:new(superSurvivor, spot)
 
+	---@type GoCheckItOutTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

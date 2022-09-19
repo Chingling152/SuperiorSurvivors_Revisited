@@ -1,8 +1,10 @@
+---@type LootCategoryTask
 LootCategoryTask = {}
 LootCategoryTask.__index = LootCategoryTask
 
 function LootCategoryTask:new(superSurvivor, building , category, thisQuantity)
 
+	---@type LootCategoryTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
@@ -207,7 +209,7 @@ function LootCategoryTask:update()
 						end
 					else
 						self.parent:DebugSay("ContainerSquareLooted")
-						self.parent:ContainerSquareLooted(self.Container:getSourceGrid(),self.Category)
+						self.parent:addContainerSquareLooted(self.Container:getSourceGrid(),self.Category)
 						self.Container = nil
 					end
 				end

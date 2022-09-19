@@ -1,8 +1,9 @@
+---@type PatrolTask
 PatrolTask = {}
 PatrolTask.__index = PatrolTask
 
 function PatrolTask:new(superSurvivor, square1, square2)
-
+	---@type PatrolTask
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self		
